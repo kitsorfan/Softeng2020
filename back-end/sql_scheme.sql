@@ -37,7 +37,7 @@ CREATE TABLE Point (
   INDEX (StationID));
 
 CREATE TABLE Provider (
-  ProviderID int NOT NULL,
+  ProviderID int NOT NULL AUTO_INCREMENT,
   Name       varchar(100) NOT NULL,
   Phone      varchar(13) UNIQUE,
   Email      varchar(100) UNIQUE,
