@@ -25,7 +25,7 @@ USE project_e_lectra;
 CREATE TABLE Provider (
   ProviderID int NOT NULL AUTO_INCREMENT,
   Name       varchar(100) NOT NULL,
-  Phone      varchar(13) UNIQUE,
+  Phone      bigint UNIQUE,
   Email      varchar(100) UNIQUE,
   Website    varchar(300) UNIQUE,
   PRIMARY KEY (ProviderID),
@@ -70,7 +70,7 @@ CREATE TABLE Vehicle (
 
     -- ------------<5. CHARGING STATION>-------------- --Stelios
   CREATE TABLE Station (
-    StationID    int NOT NULL AUTO_INCREMENT,
+    StationID    int UNIQUE NOT NULL AUTO_INCREMENT,
     Name         varchar(32) NOT NULL,
     Operator     varchar(30) NOT NULL,
     StationType  varchar(20) NOT NULL,
@@ -80,10 +80,10 @@ CREATE TABLE Vehicle (
     Town         varchar(32),
     Country      varchar(32),
     Latitude     decimal(10,8) CHECK (latitude>=-90 and latitude<=90) NOT NULL,
-    Longitude    decimal(11,8) CHECK (longitude>=-90 and longitude<=90) NOT NULL,
-    Phone        int CHECK (Phone>0),
-    Email        varchar(255) UNIQUE,
-    Website      varchar(255) UNIQUE,
+    Longitude    decimal(11,8) CHECK (longitude>=-180 and longitude<=180) NOT NULL,
+    Phone        bigint CHECK (Phone>0),
+    Email        varchar(255) UNIQUE CHECK (Email LIKE '%_@_%._%'),
+    Website      varchar(255) UNIQUE CHECK (Website LIKE 'https://_%._%'),
     RatingStars  decimal(4,2) DEFAULT 5 CHECK (RatingStars>=0 AND RatingStars<=5) NOT NULL,
     TotalVotes   int DEFAULT 0 CHECK (TotalVotes>=0) NOT NULL,
     PRIMARY KEY (StationID),
@@ -93,7 +93,7 @@ CREATE TABLE Vehicle (
 
     -- ------------<6. CHARGING POINT>-------------- --Vasilis
     CREATE TABLE ChargingPoint (
-      PointID    int NOT NULL AUTO_INCREMENT,
+      PointID    int UNIQUE NOT NULL AUTO_INCREMENT,
       StationID  int NOT NULL,
       PointType  varchar(10) DEFAULT 'AC2' NOT NULL,
       LastUpdate datetime NOT NULL UNIQUE,
@@ -107,10 +107,10 @@ CREATE TABLE Vehicle (
 
       -- ------------<7. CHARGING SESSION>-------------- --Kitsos
 CREATE TABLE Session (
-  SessionID             bigint NOT NULL AUTO_INCREMENT,
+  SessionID             bigint UNIQUE NOT NULL AUTO_INCREMENT,
   StartedOn             datetime NOT NULL,
   FinishedOn            datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  RequestedAmountOfTime smallint CHECK (RequestedAmountOfTime>=0),
+  RequestedAmountOfTime bigint CHECK (RequestedAmountOfTime>=0),
   RequestedEnergy       decimal(10,3) CHECK (RequestedEnergy>=0),
   EnergyDeliverd        decimal(10,3) NOT NULL CHECK (EnergyDeliverd>=0),
   Protocol              varchar(10) NOT NULL,
@@ -139,8 +139,3 @@ ALTER TABLE Vehicle ADD CONSTRAINT FKVehicle960723 FOREIGN KEY (UserID) REFERENC
 alter table Provider add constraint chk_provider_email check (Provider.Email like '%_@_%._%');
 
 alter table Provider add constraint chk_provider_website check (Provider.Website like 'https://_%._%');
-
-alter table User add constraint chk_user_phone check (User.Phone like'[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]');
-
-
-
