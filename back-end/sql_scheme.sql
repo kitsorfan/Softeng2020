@@ -98,7 +98,7 @@ CREATE TABLE Status (
   UNIQUE INDEX (StatusID));
 
 CREATE TABLE `User` (
-  UserID      int NOT NULL,
+  UserID      int NOT NULL AUTO_INCREMENT,
   Name        varchar(32) NOT NULL,
   Surname     varchar(32) NOT NULL,
   Birthdate   date NOT NULL,
