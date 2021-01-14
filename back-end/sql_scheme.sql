@@ -39,7 +39,7 @@ CREATE TABLE User (
   Surname     varchar(32) NOT NULL,
   Birthdate   date NOT NULL,
   BonusPoints int DEFAULT 0 CHECK (BonusPoints>=0) NOT NULL,
-  Phone       int UNIQUE,
+  Phone       bigint UNIQUE,
   PRIMARY KEY (UserID),
   UNIQUE INDEX (UserID),
   INDEX (Surname));
