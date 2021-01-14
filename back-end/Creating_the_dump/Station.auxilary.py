@@ -39,9 +39,6 @@ StreetName=["Kifisias", "Syggrou","Vasileos Konstantinou","Ilioupoleos","Oulof P
 #----Town Name------
 TownName=["Athens", "Thessaloniki", "Livadia", "Patra","Lamia","Alexandroupoli","Larisa","Karditsa","Trikala","Irakleio","Drama"]
 
-#----Town Name------
-TownName=["Athens", "Thessaloniki", "Livadia", "Patra","Lamia","Alexandroupoli","Larisa","Karditsa","Trikala","Irakleio","Drama"]
-
 #----Email------
 EmailNamePrefix=["giorgos","user","giannis","maria","lord","favicon","provider","operator","john"]
 EmailNameSuffix=["maestros","papadakis","supertroll","world","random","love","ellada","forthewin"]
@@ -66,6 +63,7 @@ with open('Station.csv', 'w', newline='') as file:
     while x<=NumberOfElements:
         (
         writer.writerow([   #one single row contain:
+
         random.choice(StationNamePrefix)+" "+random.choice(StationNameSuffix),  #Station Name
         random.choice(OperatorName)+" "+random.choice(OperatorSurname), #Operator Name
         random.choice(StationType), #StationType
