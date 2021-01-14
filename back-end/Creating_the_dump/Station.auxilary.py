@@ -8,7 +8,7 @@
 # Softeng, ECE NTUA, 2021
 
 #@@@@@@@@@@@@@@@@@@@@@---- CSV GENERATOR -----@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-#We use to functions, random.randrange for numbers
+#We use 2 functions, random.randrange for numbers
 #and random.choice for strings (see RANDOM DATA POOL)
 
 NumberOfElements=40 #Number of elements to produce
