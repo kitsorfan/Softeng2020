@@ -111,7 +111,7 @@ CREATE TABLE Session (
   StartedOn             datetime NOT NULL,
   FinishedOn            datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   RequestedEnergy       decimal(10,3) CHECK (RequestedEnergy>=0),
-  EnergyDeliverd        decimal(10,3) NOT NULL CHECK (EnergyDeliverd>=0),
+  EnergyDelivered        decimal(10,3) NOT NULL CHECK (EnergyDeliverd>=0),
   Protocol              varchar(10) NOT NULL,
   PaymentType           varchar(10) NOT NULL,
   PricePolicyRef        varchar(10) NOT NULL,
