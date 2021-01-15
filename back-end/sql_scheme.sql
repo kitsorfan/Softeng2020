@@ -109,7 +109,7 @@ CREATE TABLE `User` (
   INDEX (Surname));
 
 CREATE TABLE Vehicle (
-  VehicleID      bigint NOT NULL,
+  VehicleID      bigint NOT NULL AUTO_INCREMENT,
   Brand          varchar(20) NOT NULL,
   Model          varchar(30) NOT NULL,
   ReleaseYear    year DEFAULT '2021',
