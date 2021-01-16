@@ -16,7 +16,6 @@ NumberOfPoints=200 #Number of elements to produce
 import random
 import csv
 import time
-import decimal
 
 
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -40,7 +39,7 @@ def str_time_prop(start, end, format, prop):
     return time.strftime(format, time.localtime(ptime))
 
 def random_date(start, end, prop):
-    return str_time_prop(start, end, '%Y/%m/%d', prop)
+    return str_time_prop(start, end, '%Y/%m/%d %H:%M', prop)
 
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 #------------------------RANDOM DATA POOL-----------------------------------------
@@ -49,7 +48,7 @@ def random_date(start, end, prop):
 #You can add as many strings as you want. The more the better.
 
 #----Status ID------
-StatusID=[1,1,1,1,1,1,1,2,3,4,5,6,7]
+StatusID=[1,1,1,1,1,1,1,2,2,2,3,4,5,6,7,7,7]
 
 #----Point Type------
 PointType=["AC2", "AC3","DC"]
@@ -63,13 +62,11 @@ with open('ChargingPoint.csv', 'w', newline='') as file:
     x=0
     while x<=NumberOfPoints:
         (
-
-
         writer.writerow([   #one single row contain:
 
             random.choice(PointType), #PointType
-            LastUpdate=random_date("2020/1/1","2021/1/1",random.random()) #random date for last update
-            random.choice(StatusID), #StatusID
+            random_date("2020/12/15 07:00","2021/1/1 21:00",random.random()), #random date for last update
+            random.choice(StatusID) #StatusID
 
         ])
         )

@@ -20,7 +20,6 @@ NumberOfPoints=200
 import random
 import csv
 import time
-import decimal
 
 
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
