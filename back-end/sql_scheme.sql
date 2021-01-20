@@ -50,7 +50,7 @@ CREATE TABLE Vehicle (
   Brand          varchar(20) NOT NULL,
   Model          varchar(30) NOT NULL,
   ReleaseYear    year DEFAULT '2021',
-  Type           varchar(10) DEFAULT 'BEV' NOT NULL comment 'CUV, SUV, truck, supercar, limo, 4x4 etc.',
+  Type           varchar(10) DEFAULT 'BEV' NOT NULL
   BatterySize    decimal(8,2) NOT NULL,
   CurrentBattery decimal(8,2) NOT NULL,
   UserID         int NOT NULL,
@@ -62,7 +62,7 @@ CREATE TABLE Vehicle (
 
   -- ------------<4. STATUS OF THE CHARGING POINT>-------------- --Kitsos
   CREATE TABLE Status (
-    StatusID      tinyint NOT NULL,
+    StatusID      tinyint NOT NULL AUTO_INCREMENT,
     StatusName    varchar(50) NOT NULL,
     IsOperational boolean NOT NULL CHECK (IsOperational in (0,1)),
     PRIMARY KEY (StatusID),
