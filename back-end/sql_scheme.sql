@@ -21,7 +21,7 @@ CREATE DATABASE IF NOT EXISTS project_e_lectra;
 USE project_e_lectra;
 
 -- ------------<ENTITIES CREATION>--------------
--- ------------<ELECTRICITY PROVIDER>--------------
+-- ------------<1. ELECTRICITY PROVIDER>--------------
 CREATE TABLE Provider (
   ProviderID int NOT NULL AUTO_INCREMENT,
   Name       varchar(100) NOT NULL,
@@ -32,7 +32,7 @@ CREATE TABLE Provider (
   UNIQUE INDEX (ProviderID),
   UNIQUE INDEX (Name));
 
-  -- ------------<USER>-----------------------------
+  -- ------------<2. USER>----------------------------
 CREATE TABLE User (
   UserID      int NOT NULL,
   Name        varchar(32) NOT NULL,
@@ -44,7 +44,7 @@ CREATE TABLE User (
   UNIQUE INDEX (UserID),
   INDEX (Surname));
 
-  -- ------------<VEHICLE>--------------
+  -- ------------<3. VEHICLE>--------------
 CREATE TABLE Vehicle (
   VehicleID      bigint NOT NULL AUTO_INCREMENT,
   Brand          varchar(20) NOT NULL,
@@ -60,7 +60,7 @@ CREATE TABLE Vehicle (
   INDEX (Model),
   INDEX (Type));
 
-  -- ------------<STATUS OF THE CHARGING POINT>-------------- --Kitsos
+  -- ------------<4. STATUS OF THE CHARGING POINT>-------------- --Kitsos
   CREATE TABLE Status (
     StatusID      tinyint NOT NULL,
     StatusName    varchar(50) NOT NULL,
@@ -68,7 +68,7 @@ CREATE TABLE Vehicle (
     PRIMARY KEY (StatusID),
     UNIQUE INDEX (StatusID));
 
-    -- ------------<CHARGING STATION>-------------- --Stelios
+    -- ------------<5. CHARGING STATION>-------------- --Stelios
   CREATE TABLE Station (
     StationID    int NOT NULL AUTO_INCREMENT,
     Name         varchar(32) NOT NULL,
@@ -84,14 +84,14 @@ CREATE TABLE Vehicle (
     Phone        int CHECK (Phone>0),
     Email        varchar(255) UNIQUE,
     Website      varchar(255) UNIQUE,
-    RatingStars  decimal(3,1) DEFAULT 5 CHECK (RatingStars>=0 AND RatingStars<=5) NOT NULL,
+    RatingStars  decimal(4,2) DEFAULT 5 CHECK (RatingStars>=0 AND RatingStars<=5) NOT NULL,
     TotalVotes   int DEFAULT 0 CHECK (TotalVotes>=0) NOT NULL,
     PRIMARY KEY (StationID),
     INDEX (Operator),
     INDEX (PostalCode),
     INDEX (Country)) ;
 
-    -- ------------<CHARGING POINT>-------------- --Vasilis
+    -- ------------<6. CHARGING POINT>-------------- --Vasilis
     CREATE TABLE ChargingPoint (
       PointID    int NOT NULL AUTO_INCREMENT,
       StationID  int NOT NULL,
@@ -105,7 +105,7 @@ CREATE TABLE Vehicle (
       ON UPDATE CASCADE ON DELETE RESTRICT, -- status can't be deleted if there are points with that status
       UNIQUE INDEX StationPointID(StationID, PointID));
 
-      -- ------------<CHARGING SESSION>-------------- --Kitsos
+      -- ------------<7. CHARGING SESSION>-------------- --Kitsos
 CREATE TABLE Session (
   SessionID             bigint NOT NULL AUTO_INCREMENT,
   StartedOn             datetime NOT NULL,
