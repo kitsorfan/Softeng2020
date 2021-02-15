@@ -1,41 +1,27 @@
+/*
+e-Lectra Project by The Charging Aces:
+~Stelios Kandylakis
+~Margarita  Oikonomakou
+~Kitsos     Orfanopoulos
+~Vasilis    Papalexis
+~Georgia    Stamou
+~Dido       Stoikou
 
-/* -- DROP IF RESET IS NEEDED
-
-ALTER TABLE Vehicle DROP FOREIGN KEY FKVehicle960723;
-ALTER TABLE `Session` DROP FOREIGN KEY FKSession61705;
-ALTER TABLE `Session` DROP FOREIGN KEY FKSession967689;
-ALTER TABLE `Session` DROP FOREIGN KEY FKSession916250;
-ALTER TABLE Point DROP FOREIGN KEY FKPoint351783;
-ALTER TABLE Point DROP FOREIGN KEY FKPoint28372;
-DROP TABLE IF EXISTS Point;
-DROP TABLE IF EXISTS Provider;
-DROP TABLE IF EXISTS `Session`;
-DROP TABLE IF EXISTS Station;
-DROP TABLE IF EXISTS Status;
-DROP TABLE IF EXISTS `User`;
-DROP TABLE IF EXISTS Vehicle;
-
--- OR THE WHOLE DB
-DROP DATABASE IF EXISTS project_e_lectra;
+Softeng, ECE NTUA, 2021
 */
 
 -- ---<<SQL code for creating our database schema>>--------------
+
+DROP DATABASE IF EXISTS project_e_lectra;
+
+
 -- ------------<DATABASE CREATION>--------------
 
 CREATE DATABASE IF NOT EXISTS project_e_lectra;
 USE project_e_lectra;
 
 -- ------------<ENTITIES CREATION>--------------
-CREATE TABLE Point (
-  PointID    int NOT NULL,
-  StationID  int NOT NULL,
-  Type       varchar(10) DEFAULT 'AC2' NOT NULL,
-  LastUpdate timestamp NOT NULL UNIQUE,
-  StatusID   tinyint NOT NULL,
-  PRIMARY KEY (PointID,
-  StationID),
-  INDEX (StationID));
-
+-- ------------<ELECTRICITY PROVIDER>--------------
 CREATE TABLE Provider (
   ProviderID int NOT NULL AUTO_INCREMENT,
   Name       varchar(100) NOT NULL,
@@ -46,76 +32,27 @@ CREATE TABLE Provider (
   UNIQUE INDEX (ProviderID),
   UNIQUE INDEX (Name));
 
-CREATE TABLE `Session` (
-  SessionID             bigint NOT NULL,
-  StartedOn             timestamp NOT NULL,
-  FinishedOn            timestamp NOT NULL,
-  RequestedAmountOfTime smallint,
-  RequestedEnergy       float,
-  EnergyDeliverd        float NOT NULL,
-  Protocol              varchar(10) NOT NULL,
-  PaymentType           varchar(10) NOT NULL,
-  PricePolicyRef        varchar(10) NOT NULL,
-  CostPerKWh            float NOT NULL,
-  SessionCost           float NOT NULL,
-  BonusPointsRedeemed   int NOT NULL,
-  BonusPointsGained     int NOT NULL,
-  VehicleID             bigint NOT NULL,
-  PointID               int NOT NULL,
-  ProviderID            int NOT NULL,
-  PointStationID        int NOT NULL,
-  PointStationID2       int NOT NULL,
-  PRIMARY KEY (SessionID));
-
-CREATE TABLE Station (
-  StationID    int NOT NULL AUTO_INCREMENT,
-  Name         varchar(32),
-  Operator     varchar(30) NOT NULL,
-  StationType  varchar(20) NOT NULL comment 'Public, Private, military, etc.',
-  Street       varchar(32) NOT NULL,
-  StreetNumber smallint NOT NULL,
-  PostalCode   varchar(10),
-  Town         varchar(32),
-  Country      varchar(32),
-  Latitude     double NOT NULL,
-  Longitude    double NOT NULL,
-  Phone        varchar(13),
-  Email        varchar(255) UNIQUE,
-  Website      varchar(255) UNIQUE,
-  RatingStars  float DEFAULT 5 NOT NULL comment 'For users'' rating system, from 1 to 5, with one decimal',
-  TotalVotes   int DEFAULT 0 NOT NULL,
-  PRIMARY KEY (StationID),
-  UNIQUE INDEX (Operator),
-  INDEX (PostalCode),
-  INDEX (Country));
-
-
-CREATE TABLE Status (
-  StatusID      tinyint NOT NULL,
-  StatusName    varchar(50) NOT NULL,
-  IsOperational boolean NOT NULL,
-  PRIMARY KEY (StatusID),
-  UNIQUE INDEX (StatusID));
-
-CREATE TABLE `User` (
-  UserID      int NOT NULL AUTO_INCREMENT,
+  -- ------------<USER>-----------------------------
+CREATE TABLE User (
+  UserID      int NOT NULL,
   Name        varchar(32) NOT NULL,
   Surname     varchar(32) NOT NULL,
   Birthdate   date NOT NULL,
-  BonusPoints int DEFAULT 0 NOT NULL comment 'Bonus Points >0' 	,
+  BonusPoints int DEFAULT 0 CHECK (BonusPoints>=0) NOT NULL,
   Phone       int UNIQUE,
   PRIMARY KEY (UserID),
   UNIQUE INDEX (UserID),
   INDEX (Surname));
 
+  -- ------------<VEHICLE>--------------
 CREATE TABLE Vehicle (
   VehicleID      bigint NOT NULL AUTO_INCREMENT,
   Brand          varchar(20) NOT NULL,
   Model          varchar(30) NOT NULL,
   ReleaseYear    year DEFAULT '2021',
   Type           varchar(10) DEFAULT 'BEV' NOT NULL comment 'CUV, SUV, truck, supercar, limo, 4x4 etc.',
-  BatterySize    float NOT NULL,
-  CurrentBattery float NOT NULL,
+  BatterySize    decimal(8,2) NOT NULL,
+  CurrentBattery decimal(8,2) NOT NULL,
   UserID         int NOT NULL,
   PRIMARY KEY (VehicleID),
   UNIQUE INDEX (VehicleID),
@@ -123,9 +60,78 @@ CREATE TABLE Vehicle (
   INDEX (Model),
   INDEX (Type));
 
+  -- ------------<STATUS OF THE CHARGING POINT>-------------- --Kitsos
+  CREATE TABLE Status (
+    StatusID      tinyint NOT NULL,
+    StatusName    varchar(50) NOT NULL,
+    IsOperational boolean NOT NULL CHECK (IsOperational in (0,1)),
+    PRIMARY KEY (StatusID),
+    UNIQUE INDEX (StatusID));
+
+    -- ------------<CHARGING STATION>-------------- --Stelios
+  CREATE TABLE Station (
+    StationID    int NOT NULL AUTO_INCREMENT,
+    Name         varchar(32) NOT NULL,
+    Operator     varchar(30) NOT NULL,
+    StationType  varchar(20) NOT NULL,
+    Street       varchar(32) NOT NULL,
+    StreetNumber smallint NOT NULL CHECK(StreetNumber>0),
+    PostalCode   varchar(10),
+    Town         varchar(32),
+    Country      varchar(32),
+    Latitude     decimal(10,8) CHECK (latitude>=-90 and latitude<=90) NOT NULL,
+    Longitude    decimal(11,8) CHECK (longitude>=-90 and longitude<=90) NOT NULL,
+    Phone        int CHECK (Phone>0),
+    Email        varchar(255) UNIQUE,
+    Website      varchar(255) UNIQUE,
+    RatingStars  decimal(3,1) DEFAULT 5 CHECK (RatingStars>=0 AND RatingStars<=5) NOT NULL,
+    TotalVotes   int DEFAULT 0 CHECK (TotalVotes>=0) NOT NULL,
+    PRIMARY KEY (StationID),
+    INDEX (Operator),
+    INDEX (PostalCode),
+    INDEX (Country)) ;
+
+    -- ------------<CHARGING POINT>-------------- --Vasilis
+    CREATE TABLE ChargingPoint (
+      PointID    int NOT NULL AUTO_INCREMENT,
+      StationID  int NOT NULL,
+      PointType  varchar(10) DEFAULT 'AC2' NOT NULL,
+      LastUpdate datetime NOT NULL UNIQUE,
+      StatusID   tinyint NOT NULL,
+      PRIMARY KEY (PointID, StationID), -- composite key
+      FOREIGN KEY (StationID) REFERENCES Station(StationID)
+      ON UPDATE CASCADE ON DELETE CASCADE, -- if station is deleted then the point will deleted too
+      FOREIGN KEY (StatusID) REFERENCES Status(StatusID)
+      ON UPDATE CASCADE ON DELETE RESTRICT, -- status can't be deleted if there are points with that status
+      UNIQUE INDEX StationPointID(StationID, PointID));
+
+      -- ------------<CHARGING SESSION>-------------- --Kitsos
+CREATE TABLE Session (
+  SessionID             bigint NOT NULL AUTO_INCREMENT,
+  StartedOn             datetime NOT NULL,
+  FinishedOn            datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  RequestedAmountOfTime smallint CHECK (RequestedAmountOfTime>=0),
+  RequestedEnergy       decimal(10,3) CHECK (RequestedEnergy>=0),
+  EnergyDeliverd        decimal(10,3) NOT NULL CHECK (EnergyDeliverd>=0),
+  Protocol              varchar(10) NOT NULL,
+  PaymentType           varchar(10) NOT NULL,
+  PricePolicyRef        varchar(10) NOT NULL,
+  CostPerKWh            decimal(10,4) NOT NULL CHECK (CostPerKWh>=0),
+  SessionCost           decimal(10,2) NOT NULL CHECK (SessionCost>=0),
+  BonusPointsRedeemed   int NOT NULL DEFAULT 0 CHECK(BonusPointsRedeemed>=0),
+  BonusPointsGained     int NOT NULL DEFAULT 0 CHECK(BonusPointsGained>=0),
+  VehicleID             bigint,
+  StationPointID        int,
+  ProviderID            int,
+  PRIMARY KEY (SessionID),
+  FOREIGN KEY (VehicleID) REFERENCES Vehicle(VehicleID)
+  ON UPDATE CASCADE ON DELETE SET NULL, -- if vehicle is deleted the records will continue to show as NULL
+  FOREIGN KEY (StationPointID) REFERENCES ChargingPoint(PointID)
+  ON UPDATE CASCADE ON DELETE SET NULL, --  if the charging point is deleted the records will continue to show as NULL
+  FOREIGN KEY (ProviderID) REFERENCES Provider(ProviderID)
+  ON UPDATE CASCADE ON DELETE SET NULL);
+
+
+
+
 ALTER TABLE Vehicle ADD CONSTRAINT FKVehicle960723 FOREIGN KEY (UserID) REFERENCES `User` (UserID);
-ALTER TABLE `Session` ADD CONSTRAINT FKSession61705 FOREIGN KEY (VehicleID) REFERENCES Vehicle (VehicleID);
-ALTER TABLE `Session` ADD CONSTRAINT FKSession967689 FOREIGN KEY (PointID, PointStationID2) REFERENCES Point (PointID, StationID);
-ALTER TABLE `Session` ADD CONSTRAINT FKSession916250 FOREIGN KEY (ProviderID) REFERENCES Provider (ProviderID);
-ALTER TABLE Point ADD CONSTRAINT FKPoint351783 FOREIGN KEY (StatusID) REFERENCES Status (StatusID);
-ALTER TABLE Point ADD CONSTRAINT FKPoint28372 FOREIGN KEY (StationID) REFERENCES Station (StationID);
