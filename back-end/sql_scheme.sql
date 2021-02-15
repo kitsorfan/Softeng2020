@@ -133,9 +133,7 @@ CREATE TABLE Session (
 
 
 
-
 ALTER TABLE Vehicle ADD CONSTRAINT FKVehicle960723 FOREIGN KEY (UserID) REFERENCES `User` (UserID);
-
-alter table Provider add constraint chk_provider_email check (Provider.Email like '%_@_%._%');
-
-alter table Provider add constraint chk_provider_website check (Provider.Website like 'https://_%._%');
+ALTER TABLE Provider ADD CONSTRAINT chk_provider_email CHECK (Provider.Email like '%_@_%._%');
+ALTER TABLE Provider ADD CONSTRAINT chk_provider_website CHECK (Provider.Website like 'https://_%._%');
+ALTER TABLE User ADD CONSTRAINT chk_user_phone CHECK (User.Phone like'[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]');
