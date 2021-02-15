@@ -1,4 +1,6 @@
 # TL20-template
+This is a team project for Software Engineering Lesson of ECE NTUA
+
 
 Template repository, used for NTUA/ECE Software Engineering, 2020-2021
 
