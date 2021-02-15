@@ -133,10 +133,14 @@ CREATE TABLE Session (
 
 
 
+ALTER TABLE User ADD CONSTRAINT chk_user_phone CHECK((User.Phone >= 2000000000 AND User.phone <=2999999999) OR (User.Phone <= 6999999999 AND User.Phone >= 6900000000));
+
 ALTER TABLE Vehicle ADD CONSTRAINT FKVehicle960723 FOREIGN KEY (UserID) REFERENCES `User` (UserID);
+
+ALTER TABLE Vehicle ADD CONSTRAINT chk_vehicle_type CHECK (Vehicle.Type in ('PHEV', 'BEV', 'FCEV'));
+
+ALTER TABLE Vehicle ADD CONSTRAINT chk_vehicle_type CHECK (Vehicle.CurrentBattery <=100.00);
 
 ALTER TABLE Provider ADD CONSTRAINT chk_provider_email CHECK (Provider.Email LIKE '%_@_%._%');
 
 ALTER TABLE Provider ADD CONSTRAINT chk_provider_website CHECK (Provider.Website LIKE 'https://_%._%');
-
-ALTER TABLE User ADD CONSTRAINT chk_user_phone CHECK (User.Phone like'[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]');
