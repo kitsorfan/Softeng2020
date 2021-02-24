@@ -25,9 +25,9 @@ USE project_e_lectra;
 CREATE TABLE Provider (
   ProviderID int NOT NULL AUTO_INCREMENT,
   Name       varchar(100) NOT NULL,
-  Phone      bigint UNIQUE,
-  Email      varchar(100) UNIQUE,
-  Website    varchar(300) UNIQUE,
+  Phone      bigint UNIQUE CHECK((User.Phone >= 2000000000 AND User.phone <=2999999999) OR (User.Phone <= 6999999999 AND User.Phone >= 6900000000)),
+  Email      varchar(100) UNIQUE CHECK (Email LIKE '%_@_%._%',
+  Website    varchar(300) UNIQUE CHECK (Website LIKE 'https://_%._%'),
   PRIMARY KEY (ProviderID),
   UNIQUE INDEX (ProviderID),
   UNIQUE INDEX (Name));
@@ -50,12 +50,14 @@ CREATE TABLE Vehicle (
   Brand          varchar(20) NOT NULL,
   Model          varchar(30) NOT NULL,
   ReleaseYear    year DEFAULT '2021',
-  Type           varchar(10) DEFAULT 'BEV' NOT NULL
-  BatterySize    decimal(8,2) NOT NULL,
-  CurrentBattery decimal(8,2) NOT NULL,
+  Type           varchar(10) DEFAULT 'BEV' NOT NULL CHECK (Type in ('PHEV', 'BEV', 'FCEV')),
+  BatterySize    decimal(8,2) NOT NULL CHECK (BatterySize <=100.00),
+  CurrentBattery decimal(8,2) NOT NULL CHECK (CurrentBattery <=100.00),
   UserID         int NOT NULL,
   PRIMARY KEY (VehicleID),
   UNIQUE INDEX (VehicleID),
+  FOREIGN KEY (UserID) REFERENCES `User` (UserID)
+  ON UPDATE CASCADE ON DELETE CASCADE; -- If the user is deleted, its vehicles are deleted too
   INDEX (Brand),
   INDEX (Model),
   INDEX (Type));
@@ -129,17 +131,3 @@ CREATE TABLE Session (
   ON UPDATE CASCADE ON DELETE SET NULL, --  if the charging point is deleted the records will continue to show as NULL
   FOREIGN KEY (ProviderID) REFERENCES Provider(ProviderID)
   ON UPDATE CASCADE ON DELETE SET NULL);
-
-
-
-ALTER TABLE User ADD CONSTRAINT chk_user_phone CHECK((User.Phone >= 2000000000 AND User.phone <=2999999999) OR (User.Phone <= 6999999999 AND User.Phone >= 6900000000));
-
-ALTER TABLE Vehicle ADD CONSTRAINT FKVehicle960723 FOREIGN KEY (UserID) REFERENCES `User` (UserID);
-
-ALTER TABLE Vehicle ADD CONSTRAINT chk_vehicle_type CHECK (Vehicle.Type in ('PHEV', 'BEV', 'FCEV'));
-
-ALTER TABLE Vehicle ADD CONSTRAINT chk_vehicle_type CHECK (Vehicle.CurrentBattery <=100.00);
-
-ALTER TABLE Provider ADD CONSTRAINT chk_provider_email CHECK (Provider.Email LIKE '%_@_%._%');
-
-ALTER TABLE Provider ADD CONSTRAINT chk_provider_website CHECK (Provider.Website LIKE 'https://_%._%');
