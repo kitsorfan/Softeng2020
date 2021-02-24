@@ -25,8 +25,8 @@ USE project_e_lectra;
 CREATE TABLE Provider (
   ProviderID int NOT NULL AUTO_INCREMENT,
   Name       varchar(100) NOT NULL,
-  Phone      bigint UNIQUE CHECK((User.Phone >= 2000000000 AND User.phone <=2999999999) OR (User.Phone <= 6999999999 AND User.Phone >= 6900000000)),
-  Email      varchar(100) UNIQUE CHECK (Email LIKE '%_@_%._%',
+  Phone      bigint UNIQUE CHECK ((Phone >= 2000000000 AND Phone <= 2999999999) OR (Phone <= 6999999999 AND Phone >= 6900000000)),
+  Email      varchar(100) UNIQUE CHECK (Email LIKE '%_@_%._%'),
   Website    varchar(300) UNIQUE CHECK (Website LIKE 'https://_%._%'),
   PRIMARY KEY (ProviderID),
   UNIQUE INDEX (ProviderID),
@@ -39,8 +39,8 @@ CREATE TABLE User (
   Surname     varchar(32) NOT NULL,
   Birthdate   date NOT NULL,
   BonusPoints int DEFAULT 0 CHECK (BonusPoints>=0) NOT NULL,
-  Phone       bigint UNIQUE,
-  PRIMARY KEY (UserID),
+  Phone       bigint UNIQUE CHECK((Phone >= 2000000000 AND Phone <=2999999999) OR (Phone <= 6999999999 AND Phone >= 6900000000)),
+  PRIMARY KEY (UserID) ,
   UNIQUE INDEX (UserID),
   INDEX (Surname));
 
@@ -56,8 +56,8 @@ CREATE TABLE Vehicle (
   UserID         int NOT NULL,
   PRIMARY KEY (VehicleID),
   UNIQUE INDEX (VehicleID),
-  FOREIGN KEY (UserID) REFERENCES `User` (UserID)
-  ON UPDATE CASCADE ON DELETE CASCADE; -- If the user is deleted, its vehicles are deleted too
+  FOREIGN KEY (UserID) REFERENCES User(UserID)
+  ON UPDATE CASCADE ON DELETE CASCADE, -- If the user is deleted, its vehicles are deleted too
   INDEX (Brand),
   INDEX (Model),
   INDEX (Type));
@@ -100,12 +100,12 @@ CREATE TABLE Vehicle (
       PointType  varchar(10) DEFAULT 'AC2' NOT NULL,
       LastUpdate datetime NOT NULL UNIQUE,
       StatusID   tinyint NOT NULL,
-      PRIMARY KEY (PointID, StationID), -- composite key
+      PRIMARY KEY (PointID),
       FOREIGN KEY (StationID) REFERENCES Station(StationID)
       ON UPDATE CASCADE ON DELETE CASCADE, -- if station is deleted then the point will deleted too
       FOREIGN KEY (StatusID) REFERENCES Status(StatusID)
       ON UPDATE CASCADE ON DELETE RESTRICT, -- status can't be deleted if there are points with that status
-      UNIQUE INDEX StationPointID(StationID, PointID));
+      INDEX (StationID));
 
       -- ------------<7. CHARGING SESSION>-------------- --Kitsos
 CREATE TABLE Session (
@@ -113,7 +113,7 @@ CREATE TABLE Session (
   StartedOn             datetime NOT NULL,
   FinishedOn            datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   RequestedEnergy       decimal(10,3) CHECK (RequestedEnergy>=0),
-  EnergyDelivered        decimal(10,3) NOT NULL CHECK (EnergyDeliverd>=0),
+  EnergyDelivered       decimal(10,3)  CHECK (EnergyDelivered>=0),
   Protocol              varchar(10) NOT NULL,
   PaymentType           varchar(10) NOT NULL,
   PricePolicyRef        varchar(10) NOT NULL,
@@ -122,12 +122,12 @@ CREATE TABLE Session (
   BonusPointsRedeemed   int NOT NULL DEFAULT 0 CHECK(BonusPointsRedeemed>=0),
   BonusPointsGained     int NOT NULL DEFAULT 0 CHECK(BonusPointsGained>=0),
   VehicleID             bigint,
-  StationPointID        int,
+  PointID               int,
   ProviderID            int,
   PRIMARY KEY (SessionID),
   FOREIGN KEY (VehicleID) REFERENCES Vehicle(VehicleID)
   ON UPDATE CASCADE ON DELETE SET NULL, -- if vehicle is deleted the records will continue to show as NULL
-  FOREIGN KEY (StationPointID) REFERENCES ChargingPoint(PointID)
+  FOREIGN KEY (PointID) REFERENCES ChargingPoint(PointID)
   ON UPDATE CASCADE ON DELETE SET NULL, --  if the charging point is deleted the records will continue to show as NULL
   FOREIGN KEY (ProviderID) REFERENCES Provider(ProviderID)
   ON UPDATE CASCADE ON DELETE SET NULL);
