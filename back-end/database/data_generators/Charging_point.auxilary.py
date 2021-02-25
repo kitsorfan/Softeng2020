@@ -11,7 +11,8 @@
 #We use 2 functions, random.randrange for numbers
 #and random.choice for strings (see RANDOM DATA POOL)
 
-NumberOfPoints=200 #Number of elements to produce
+NumberOfPoints=200 #Number of BonusPoints to produce
+NumberOfStations=40 #Number of Stations
 
 import random
 import csv
@@ -48,7 +49,7 @@ def random_date(start, end, prop):
 #You can add as many strings as you want. The more the better.
 
 #----Status ID------
-StatusID=[1,1,1,1,1,1,1,2,2,2,3,4,5,6,7,7,7]
+StatusID=[1,1,1,1,1,1,1,2,2,2,3,4,5,5,5,6,6]
 
 #----Point Type------
 PointType=["AC2", "AC3","DC"]
@@ -57,13 +58,13 @@ PointType=["AC2", "AC3","DC"]
 with open('ChargingPoint.csv', 'w', newline='') as file:
     writer = csv.writer(file)
     #-- first row must have the names of the columns (attibutes of the entity)
-    writer.writerow(["PointID", "StationID","PointType", "LastUpdate", "StatusID"])
+    writer.writerow(["StationID","PointType", "LastUpdate", "StatusID"])
 
     x=0
-    while x<=NumberOfPoints:
+    while x<NumberOfPoints:
         (
         writer.writerow([   #one single row contain:
-
+            random.randrange(NumberOfStations)+1, #PointType
             random.choice(PointType), #PointType
             random_date("2020/12/15 07:00","2021/1/1 21:00",random.random()), #random date for last update
             random.choice(StatusID) #StatusID

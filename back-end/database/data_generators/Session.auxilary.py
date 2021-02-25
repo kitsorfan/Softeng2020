@@ -61,10 +61,10 @@ with open('Session.csv', 'w', newline='') as file:
     writer = csv.writer(file)
     #-- first row must have the names of the columns (attibutes of the entity)
     #-- StationID isn't required (AUTO_INCREMENT)
-    writer.writerow(["StartedOn", "FinishedOn","RequestedEnergy", "EnergyDelivered", "Protocol","PaymentType", "PricePolicyRef", "CostPerKWh","SessionCost", "BonusPointsRedeemed","BonusPointsGained","VehicleID","StationPointID","ProviderID"])
+    writer.writerow(["StartedOn", "FinishedOn","RequestedEnergy", "EnergyDelivered", "Protocol","PaymentType", "PricePolicyRef", "CostPerKWh","SessionCost", "BonusPointsRedeemed","BonusPointsGained","VehicleID","PointID","ProviderID"])
 
     x=0
-    while x<=NumberOfSessions:
+    while x<NumberOfSessions:
         StartDate=random_date("2020/1/1","2021/1/1",random.random())
         StartHour=random.randrange(0,20,1)
         EndHour=StartHour+random.randrange(1,3,1)
@@ -80,7 +80,7 @@ with open('Session.csv', 'w', newline='') as file:
         EnergyOption=[str(Energy),"NULL"]
 
         RequestedEnergy=random.choice(EnergyOption)
-        EnergyDelivered=round(Energy+(random.randrange(-10,10,1)/10),1)
+        EnergyDelivered=round(Energy+(random.randrange(-5,10,1)/10),1)
 
         PricePolicyRef=random.choice(PricePolicies)
         if PricePolicyRef=="Standard":
@@ -96,6 +96,8 @@ with open('Session.csv', 'w', newline='') as file:
 
 
         SessionCost=round(CostPerKWh*EnergyDelivered-BonusPointsRedeemed/100,2)
+        if (SessionCost<0):
+            SessionCost=-SessionCost
 
 
 
@@ -105,9 +107,9 @@ with open('Session.csv', 'w', newline='') as file:
         random.choice(Protocol),
         "Credit Card",
         PricePolicyRef,CostPerKWh,SessionCost,BonusPointsRedeemed,BonusPointsGained,
-        random.randrange(1,NumberOfVehicles,1),
-        random.randrange(1,NumberOfPoints,1),
-        random.randrange(1,NumberOfProviders,1)
+        random.randrange(1,NumberOfVehicles+1,1),
+        random.randrange(1,NumberOfPoints+1,1),
+        random.randrange(1,NumberOfProviders+1,1)
 
         ])
         )

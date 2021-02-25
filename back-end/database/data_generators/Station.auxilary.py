@@ -60,7 +60,7 @@ with open('Station.csv', 'w', newline='') as file:
     writer.writerow(["Name", "Operator","StationType", "Street", "StreetNumber","PostalCode","Town", "Country", "Latitude","Longitude","Phone", "Email","Website","RatingStars","TotalVotes"])
 
     x=0
-    while x<=NumberOfElements:
+    while x<NumberOfElements:
         (
         writer.writerow([   #one single row contain:
 
