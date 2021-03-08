@@ -1,5 +1,5 @@
-Name,Surname,Birthdate,BonusPoints,Phone
-Marios,Papathanasiou,1967/2/26,5,6977708013
+Username, HashedPassword,Name,Surname,Birthdate,BonusPoints,Phone
+user1, b'e\'\x9ebY\x8e\xb6\xbbB\xe0 \xf0\x17\xd7l\x8a\xf9ps$"B{\xa3vvW\x1a\xbb\x1c\x9f\x98', Marios,Papathanasiou,1967/2/26,5,6977708013
 Anna,Iordanidou,1989/9/4,40,6932550098
 Elpida,Kalogirou,1995/1/3,15,6947868804
 Andreas,Theodorou,1972/3/1,100,6908551239
