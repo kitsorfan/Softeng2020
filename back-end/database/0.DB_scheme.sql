@@ -126,6 +126,23 @@ CREATE TABLE Session (
   VehicleID             bigint,
   PointID               int,
   ProviderID            int,
+
+  -- ------------<8. ADMIN>----------------------------
+CREATE TABLE Admin (
+  AdminID      int NOT NULL AUTO_INCREMENT,
+  username    varchar(32) NOT NULL UNIQUE,
+  HashedPassword varchar(1024) NOT NULL,
+  Name        varchar(32) NOT NULL,
+  Surname     varchar(32) NOT NULL,
+  Birthdate   date NOT NULL,
+  BonusPoints int DEFAULT 0 CHECK (BonusPoints>=0) NOT NULL,
+  Phone       bigint UNIQUE CHECK((Phone >= 2000000000 AND Phone <=2999999999) OR (Phone <= 6999999999 AND Phone >= 6900000000)),
+  PRIMARY KEY (UserID) ,
+  UNIQUE INDEX (UserID),
+  INDEX (Surname));
+
+
+
   PRIMARY KEY (SessionID),
   FOREIGN KEY (VehicleID) REFERENCES Vehicle(VehicleID)
   ON UPDATE CASCADE ON DELETE SET NULL, -- if vehicle is deleted the records will continue to show as NULL
