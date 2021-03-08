@@ -35,6 +35,8 @@ CREATE TABLE Provider (
   -- ------------<2. USER>----------------------------
 CREATE TABLE User (
   UserID      int NOT NULL AUTO_INCREMENT,
+  username    varchar(32),
+  HashedPassword varchar(1024),
   Name        varchar(32) NOT NULL,
   Surname     varchar(32) NOT NULL,
   Birthdate   date NOT NULL,
