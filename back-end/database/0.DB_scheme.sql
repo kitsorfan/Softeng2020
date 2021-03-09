@@ -126,6 +126,14 @@ CREATE TABLE Session (
   VehicleID             bigint,
   PointID               int,
   ProviderID            int,
+  PRIMARY KEY (SessionID),
+  FOREIGN KEY (VehicleID) REFERENCES Vehicle(VehicleID)
+  ON UPDATE CASCADE ON DELETE SET NULL, -- if vehicle is deleted the records will continue to show as NULL
+  FOREIGN KEY (PointID) REFERENCES ChargingPoint(PointID)
+  ON UPDATE CASCADE ON DELETE SET NULL, --  if the charging point is deleted the records will continue to show as NULL
+  FOREIGN KEY (ProviderID) REFERENCES Provider(ProviderID)
+  ON UPDATE CASCADE ON DELETE SET NULL);
+
 
   -- ------------<8. ADMIN>----------------------------
 CREATE TABLE Admin (
@@ -135,18 +143,7 @@ CREATE TABLE Admin (
   Name        varchar(32) NOT NULL,
   Surname     varchar(32) NOT NULL,
   Birthdate   date NOT NULL,
-  BonusPoints int DEFAULT 0 CHECK (BonusPoints>=0) NOT NULL,
   Phone       bigint UNIQUE CHECK((Phone >= 2000000000 AND Phone <=2999999999) OR (Phone <= 6999999999 AND Phone >= 6900000000)),
-  PRIMARY KEY (UserID) ,
-  UNIQUE INDEX (UserID),
+  PRIMARY KEY (AdminID) ,
+  UNIQUE INDEX (AdminID),
   INDEX (Surname));
-
-
-
-  PRIMARY KEY (SessionID),
-  FOREIGN KEY (VehicleID) REFERENCES Vehicle(VehicleID)
-  ON UPDATE CASCADE ON DELETE SET NULL, -- if vehicle is deleted the records will continue to show as NULL
-  FOREIGN KEY (PointID) REFERENCES ChargingPoint(PointID)
-  ON UPDATE CASCADE ON DELETE SET NULL, --  if the charging point is deleted the records will continue to show as NULL
-  FOREIGN KEY (ProviderID) REFERENCES Provider(ProviderID)
-  ON UPDATE CASCADE ON DELETE SET NULL);
