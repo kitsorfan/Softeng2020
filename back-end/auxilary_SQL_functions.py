@@ -19,7 +19,7 @@
 import hashlib
 import os
 import mysql.connector
-from date import datetime
+import datetime
 
 mydb = mysql.connector.connect(
     user="root",
@@ -30,7 +30,7 @@ mydb = mysql.connector.connect(
     auth_plugin='mysql_native_password',
     use_pure='True'
 )
-pointer = mydb.pointer()  # to iterate to DB
+pointer = mydb.cursor()  # to iterate to DB
 
 #@@@@@@@@@@@@@@@@@@@@@@-- Password Hashing --@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 def hash_password(password, salt):

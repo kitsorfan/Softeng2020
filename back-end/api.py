@@ -36,16 +36,15 @@ from flask_restx import Api, Resource, fields
 from werkzeug.utils import cached_property
 from flask_jwt import JWT, jwt_required, current_identity
 from flask_cors import CORS
-from flask_cors import CORS
 import requests
-from date import datetime
 from datetime import date
 from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity, jwt_required
-import sqlQueries
 import os
-import errors
+# import errors
 import hashlib
 import mysql.connector
+
+import auxilary_SQL_functions #our auxilary
 
 #@@@@@@@@@@@@@@@@@@@@@@-- API creation --@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
