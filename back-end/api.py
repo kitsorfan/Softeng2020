@@ -50,15 +50,16 @@ mysql = MySQL(app)
 #   This is an auxilary endpoint that shows the user that the DB is connected
 #   and works properly.
 
-@app.route('/admin/healthcheck', methods=['GET'])
+@app.route('/demo', methods=['GET'])
 def home():
-    return '''<h1>Distant Reading Archive</h1>
-<p>A prototype API for distant reading of science fiction novels.</p>'''
+    return '''<h1>Nothing to see here</h1>
+<p>Except this marvelous paragraph, shows that everything is OK</p>'''
 
 
-@app.route('/healthcheck', methods=['GET'])
+@app.route('/admin/healthcheck', methods=['GET'])
 def healthcheck():
-    cur = mysql.connection.cursor()
-    mysql.connection.commit()
-    cur.close()
-    return {"status":"OK"}
+	cur = mysql.connection.cursor()
+	cur.execute("SELECT * FROM user")
+	mysql.connection.commit()
+	cur.close()
+	return {"status":"OK"}
