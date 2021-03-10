@@ -36,7 +36,7 @@ CREATE TABLE Provider (
 CREATE TABLE User (
   UserID      int NOT NULL AUTO_INCREMENT,
   username    varchar(32) NOT NULL UNIQUE,
-  HashedPassword varchar(1024) NOT NULL, -- for demonstration purposes all passwords are 'userpass'
+  Password varchar(1024) NOT NULL, -- for demonstration purposes all passwords are 'userpass'
   Name        varchar(32) NOT NULL,
   Surname     varchar(32) NOT NULL,
   Birthdate   date NOT NULL,
@@ -52,7 +52,7 @@ CREATE TABLE Vehicle (
   Brand          varchar(20) NOT NULL,
   Model          varchar(30) NOT NULL,
   ReleaseYear    year DEFAULT '2021',
-    Type           varchar(10) DEFAULT 'BEV' NOT NULL CHECK (Type in ('PHEV', 'BEV', 'FCEV')),
+  Type           varchar(10) DEFAULT 'BEV' NOT NULL CHECK (Type in ('PHEV', 'BEV', 'FCEV')),
   BatterySize    decimal(8,2) NOT NULL CHECK (BatterySize <=100.00),
   CurrentBattery decimal(8,2) NOT NULL CHECK (CurrentBattery <=100.00),
   UserID         int NOT NULL,
@@ -139,11 +139,9 @@ CREATE TABLE Session (
 CREATE TABLE Admin (
   AdminID      int NOT NULL AUTO_INCREMENT,
   username    varchar(32) NOT NULL UNIQUE,
-  HashedPassword varchar(1024) NOT NULL, -- for demonstration purposes all passwords are 'adminpass'
-  Name        varchar(32) NOT NULL,
-  Surname     varchar(32) NOT NULL,
-  Birthdate   date NOT NULL,
-  Phone       bigint UNIQUE CHECK((Phone >= 2000000000 AND Phone <=2999999999) OR (Phone <= 6999999999 AND Phone >= 6900000000)),
+  Password varchar(1024) NOT NULL, -- for demonstration purposes all passwords are 'adminpass'
+  Name        varchar(32),
+  Surname     varchar(32),
   PRIMARY KEY (AdminID) ,
   UNIQUE INDEX (AdminID),
   INDEX (Surname));
