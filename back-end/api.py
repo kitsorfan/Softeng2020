@@ -10,6 +10,7 @@
 # API code
 
 # --------------Prerequisites-----------------
+#sudo apt-get install python-dev default-libmysqlclient-dev libssl-dev
 # pip install -r requirements.txt
 
 #export FLASK_APP=api.py
@@ -17,13 +18,15 @@
 #flask run -h localhost -p 8765 --cert=adhoc
 
 
+
 #@@@@@@@@@@@@@@@@@@@@@@-- Modules --@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # Some libraries might be useless (copied-pasted from online tutorials)
-from flask import Flask, Blueprint
+from flask import Flask, Blueprint, jsonify
 from flask_restful import Api, Resource, reqparse, abort, fields, marshal_with
 import flask_restx
 from flask_mysqldb import MySQL
 import mysql.connector
+
 
 #@@@@@@@@@@@@@@@@@@@@@@-- Api Creation --@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
@@ -58,8 +61,11 @@ def home():
 
 @app.route('/admin/healthcheck', methods=['GET'])
 def healthcheck():
-	cur = mysql.connection.cursor()
-	cur.execute("SELECT * FROM user")
-	mysql.connection.commit()
-	cur.close()
-	return {"status":"OK"}
+	try:
+		cur = mysql.connection.cursor()
+		cur.execute("SELECT * FROM user")
+		mysql.connection.commit()
+		cur.close()
+		return jsonify(status="OK")
+	except:
+		return jsonify(status="failed")
