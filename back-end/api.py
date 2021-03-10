@@ -62,4 +62,3 @@ def healthcheck():
     mysql.connection.commit()
     cur.close()
     return {"status":"OK"}
-return {"status":"OK"}
