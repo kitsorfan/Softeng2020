@@ -1,4 +1,4 @@
-args.get# e-Lectra Project by The Charging Aces:
+# e-Lectra Project by The Charging Aces:
 # ~Stelios Kandylakis
 # ~Margarita   Oikonomakou
 # ~Kitsos      Orfanopoulos
@@ -32,6 +32,7 @@ import flask_restx
 from flask_mysqldb import MySQL
 import mysql.connector
 from hashlib import pbkdf2_hmac
+
 
 import requests
 
@@ -88,8 +89,8 @@ def db_write(query, params):
 
         return True
 
-    except MySQLdb._exceptions.IntegrityError:
-        cursor.close()
+    except:
+        cur.close()
         return False
 
 def db_read(query, params=None):
@@ -138,28 +139,37 @@ authentication = Blueprint("authentication", __name__)  #custom route
 
 @app.route("/register", methods=["POST"])
 def register_user():
-<<<<<<< HEAD
-	data = request.form.to_dict()
-	email = request.args.get('email')
-    username = request.args.get('username')
-    user_password = request.args.get('password')
-    birth_month	=request.args.get('Birth_month')
-    Name = request.args.get('Name')
-    Surname = request.args.get('Surname')
-    Birth_year = request.args.get('Birth_year')
-    Birth_day = request.args.get('Birth_day')
-    Phone = request.args.get('Phone')
-    Birthdate=Birth_year+"/"+Birth_month+"/"+Birth_day
 
-	return jsonify(status="ok")
-=======
-	#data = request.form.to_dict()
-	email=request.args.get('email')
-	
-	#email = data['email']
-	#password = data['password']
-	return jsonify(status=email)
->>>>>>> fcb8211a117e9bfaf6d1e84d4215b1b8d39813fe
+	username = request.args.get('username')
+	password = request.args.get('password')
+	name = request.args.get('name')
+	surname = request.args.get('surname')
+	birthdate = request.args.get('birthdate')
+	phone = request.args.get('phone')
+	#current_user = db_read("""SELECT * FROM user WHERE username = %s""", (username))
+	password_salt = generate_salt()
+	password_hash = generate_hash(password, password_salt)
+	username_taken = db_read("""SELECT * FROM user WHERE username = %s""", (username,))
+	phone_taken = db_read("""SELECT * FROM user WHERE username = %s""", (username,))
+
+	if len(username_taken) == 0:
+		if len(phone_taken)==0:
+			if db_write(
+				"INSERT INTO user (username, Password_hash, Password_salt) VALUES (%s, %s, %s)",
+				(username, password_hash, password_salt)
+			):
+				# Registration Successful
+				return jsonify(username=username, password=password_hash, salt=password_salt, birthdate=birthdate, name=name, surname=surname, Phone=phone)
+			else:
+				# Registration Failed
+				return jsonify(status="fail:unknown (perhaps birthdate format not accepted, must be YYYY-MM-DD)")
+		else:
+			return jsonify(status="fail: phone is taken")
+	else:
+		return jsonify(status="fail: username is taken")
+
+
+
 
 
 @authentication.route("/login", methods=["POST"])
@@ -218,7 +228,7 @@ def login_user():
 
 @app.route('/demo', methods=['GET'])
 def home():
-    return '''<h1>Nothing to see here😕</h1>
+	return '''<h1>Nothing to see here😕</h1>
 <p>Except this marvelous paragraph, which shows that everything is OK</p>'''
 
 
