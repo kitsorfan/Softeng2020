@@ -134,10 +134,11 @@ def encode_auth_token(self, user_id):
     except Exception as e:
         return e
 
-authentication = Blueprint("authentication", __name__)
+authentication = Blueprint("authentication", __name__)  #custom route
 
 @app.route("/register", methods=["POST"])
 def register_user():
+<<<<<<< HEAD
 	data = request.form.to_dict()
 	email = request.args.get('email')
     username = request.args.get('username')
@@ -151,6 +152,14 @@ def register_user():
     Birthdate=Birth_year+"/"+Birth_month+"/"+Birth_day
 
 	return jsonify(status="ok")
+=======
+	#data = request.form.to_dict()
+	email=request.args.get('email')
+	
+	#email = data['email']
+	#password = data['password']
+	return jsonify(status=email)
+>>>>>>> fcb8211a117e9bfaf6d1e84d4215b1b8d39813fe
 
 
 @authentication.route("/login", methods=["POST"])
