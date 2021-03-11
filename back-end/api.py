@@ -77,20 +77,19 @@ def generate_salt():
     return salt.hex
 
 
-#@@@@@@@@@@@@@@@@@@@@@@-- DB write --@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+#@@@@@@@@@@@@@@@@@@@@@@-- DB auxilary --@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 def db_write(query, params):
-    cur = db.connection.cursor()
+    cur = mysql.connection.cursor()
     try:
-        cursor.execute(query, params)
+        cur.execute(query, params)
         mysql.connection.commit()
-        cursor.close()
+        cur.close()
 
         return True
 
     except MySQLdb._exceptions.IntegrityError:
         cursor.close()
         return False
-
 
 #@@@@@@@@@@@@@@@@@@@@@@-- JWT --#############@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
@@ -160,16 +159,12 @@ def home():
 @app.route('/admin/healthcheck', methods=['GET'])
 def healthcheck():
 	try:
-		cur = mysql.connection.cursor()
-		cur.execute("SELECT * FROM user")
-		mysql.connection.commit()
-		cur.close()
+		db_write("SELECT * FROM user","")
 		return jsonify(status="OK")
 	except:
 		return jsonify(status="failed")
 
 
-
-from blueprint_auth import authentication
-
-app.register_blueprint(authentication, url_prefix="/api/auth")
+#to avoid some problems with dependecies, but it  doesn't work
+#from blueprint_auth import authentication
+#app.register_blueprint(authentication, url_prefix="/api/auth")
