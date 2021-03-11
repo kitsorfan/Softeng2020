@@ -91,6 +91,25 @@ def db_write(query, params):
         cursor.close()
         return False
 
+def db_read(query, params=None):
+    cur = mysql.connection.cursor()
+    if params:
+        cur.execute(query, params)
+    else:
+        cur.execute(query)
+
+    entries = cur.fetchall()
+    cur.close()
+
+    content = []
+
+    for entry in entries:
+        content.append(entry)
+
+    return content
+
+
+
 #@@@@@@@@@@@@@@@@@@@@@@-- JWT --#############@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 JWT_SECRET_KEY="SomeRandomSecretPhrase"
@@ -152,7 +171,7 @@ def login_user():
 
 @app.route('/demo', methods=['GET'])
 def home():
-    return '''<h1>Nothing to see here</h1>
+    return '''<h1>Nothing to see here😕</h1>
 <p>Except this marvelous paragraph, which shows that everything is OK</p>'''
 
 
@@ -163,6 +182,77 @@ def healthcheck():
 		return jsonify(status="OK")
 	except:
 		return jsonify(status="failed")
+
+
+
+# blueprint_auth.py
+@app.route('/admin/register', methods=['POST'])
+def register_user():
+    user_email = request.json["email"]
+    user_password = request.json["password"]
+    user_confirm_password = request.json["confirm_password"]
+
+    if user_password == user_confirm_password and validate_user_input(
+        "authentication", email=user_email, password=user_password
+    ):
+        password_salt = generate_salt()
+        password_hash = generate_hash(user_password, password_salt)
+
+        if db_write(
+            """INSERT INTO users (email, password_salt, password_hash) VALUES (%s, %s, %s)""",
+            (user_email, password_salt, password_hash),
+        ):
+            # Registration Successful
+            return Response(status=201)
+        else:
+            # Registration Failed
+            return Response(status=409)
+    else:
+        # Registration Failed
+        return Response(status=400)
+
+
+"""
+# blueprint_auth.py
+@app.route('/admin/register', methods=['GET'])
+def register_user():
+    username = request.json["username"]
+    user_password = request.json["password"]
+    user_confirm_password = request.json["confirm_password"]
+	return {"hello":""}
+    birth_month	=request.json["Birth_month"]
+    Name = request.json["Name"]
+    Surname = request.json["Surname"]
+    Birth_year = request.json["Birth_year"]
+    Birth_day = request.json["Birth_day"]
+    Phone = request.json["Phone"]
+    Birthdate=Birth_year+"/"+Birth_month+"/"+Birth_day
+
+    if user_password == user_confirm_password and validate_user_input(
+        "authentication", email=user_email, password=user_password
+    ):
+        password_salt = generate_salt()
+        password_hash = generate_hash(user_password, password_salt)
+
+        if db_write(
+            "INSERT INTO user (username, password_hash, password_salt, Name, Surname, Birthdate, Phone) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+            (user_email, password_hash, password_salt, Name, Surname, Birthdate, Phone)
+        ):
+            # Registration Successful
+            return Response(status=201)
+        else:
+            # Registration Failed
+            return Response(status=409)
+    else:
+        # Registration Failed
+        return Response(status=400)
+
+
+
+"""
+
+
+
 
 
 #to avoid some problems with dependecies, but it  doesn't work
