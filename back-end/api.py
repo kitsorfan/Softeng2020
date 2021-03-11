@@ -153,7 +153,7 @@ def register_user():
 	phone_taken = db_read("""SELECT * FROM user WHERE phone = %s""", (phone,))
 
 	if len(username_taken) == 0:
-		if len(phone_taken)==0:
+		if ((len(phone_taken)== 0 and phone.isnumeric()) and ((int(phone) >= 2000000000 and int(phone) <=2999999999) or (int(phone) <= 6999999999 and int(phone) >= 6900000000))) :
 			if db_write(
 				"INSERT INTO user (username, Password_hash, Password_salt, Name, Surname, Phone) VALUES (%s, %s, %s, %s, %s, %s)",
 				(username, password_hash, password_salt, name, surname, phone)
@@ -164,7 +164,7 @@ def register_user():
 				# Registration Failed
 				return jsonify(status="fail:unknown (perhaps birthdate format not accepted, must be YYYY-MM-DD)")
 		else:
-			return jsonify(status="fail: phone is taken")
+			return jsonify(status="fail: phone is taken or invalid")
 	else:
 		return jsonify(status="fail: username is taken")
 
