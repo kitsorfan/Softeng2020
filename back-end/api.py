@@ -13,19 +13,25 @@
 #sudo apt-get install python-dev default-libmysqlclient-dev libssl-dev
 # pip install -r requirements.txt
 
-#export FLASK_APP=api.py
+
+# --------------Terminal scripts--------------
+#export FLASK_APP=api.py		for windows set FLASK_APP=api.py
 #export FLASK_ENV=development       !!FOR DEBUG MODE!!
 #flask run -h localhost -p 8765 --cert=adhoc
+
+# --------------Online Tutorials--------------
+# https://medium.com/@karthikeyan.ranasthala/build-a-jwt-based-authentication-rest-api-with-flask-and-mysql-5dc6d3d1cb82
 
 
 
 #@@@@@@@@@@@@@@@@@@@@@@-- Modules --@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # Some libraries might be useless (copied-pasted from online tutorials)
-from flask import Flask, Blueprint, jsonify
+from flask import Flask, Blueprint, request, jsonify
 from flask_restful import Api, Resource, reqparse, abort, fields, marshal_with
 import flask_restx
 from flask_mysqldb import MySQL
 import mysql.connector
+
 
 import os
 import hashlib
@@ -55,16 +61,40 @@ mysql = MySQL(app)
 
 #@@@@@@@@@@@@@@@@@@@@@@-- Password Hashing --@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-def hash_password(password,salt):
-    key-hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'),salt, 100000)
-    return key
 
-def create_salt():
+def generate_hash(plain_password, password_salt):
+    password_hash = pbkdf2_hmac(
+        "sha256",
+        b"%b" % bytes(plain_password, "utf-8"),
+        b"%b" % bytes(password_salt, "utf-8"),
+        10000,
+    )
+    return password_hash.hex()
+
+
+def generate_salt():
     salt = os.urandom(32)
-    return salt
+    return salt.hex
+
+
+#@@@@@@@@@@@@@@@@@@@@@@-- DB write --@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+def db_write(query, params):
+    cur = db.connection.cursor()
+    try:
+        cursor.execute(query, params)
+        mysql.connection.commit()
+        cursor.close()
+
+        return True
+
+    except MySQLdb._exceptions.IntegrityError:
+        cursor.close()
+        return False
 
 
 #@@@@@@@@@@@@@@@@@@@@@@-- JWT --#############@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+JWT_SECRET_KEY="SomeRandomSecretPhrase"
 
 def encode_auth_token(self, user_id):
     """
@@ -73,7 +103,7 @@ def encode_auth_token(self, user_id):
     """
     try:
         payload = {
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, seconds=5),
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, hours=4),
             'iat': datetime.datetime.utcnow(),
             'sub': user_id
         }
@@ -84,6 +114,28 @@ def encode_auth_token(self, user_id):
         )
     except Exception as e:
         return e
+
+
+# Auxilary
+
+def validate_user_input(input_type, **kwargs):
+    if input_type == "authentication":
+        if len(kwargs["username"]) <= 255 and len(kwargs["password"]) <= 255:
+            return True
+        else:
+            return False
+
+# Auxilary_end
+
+authentication = Blueprint("authentication", __name__)
+
+@authentication.route("/register", methods=["POST"])
+def register_user():
+    pass
+
+@authentication.route("/login", methods=["POST"])
+def login_user():
+    pass
 
 
 
@@ -102,7 +154,7 @@ def encode_auth_token(self, user_id):
 @app.route('/demo', methods=['GET'])
 def home():
     return '''<h1>Nothing to see here</h1>
-<p>Except this marvelous paragraph, shows that everything is OK</p>'''
+<p>Except this marvelous paragraph, which shows that everything is OK</p>'''
 
 
 @app.route('/admin/healthcheck', methods=['GET'])
@@ -115,3 +167,9 @@ def healthcheck():
 		return jsonify(status="OK")
 	except:
 		return jsonify(status="failed")
+
+
+
+from blueprint_auth import authentication
+
+app.register_blueprint(authentication, url_prefix="/api/auth")
