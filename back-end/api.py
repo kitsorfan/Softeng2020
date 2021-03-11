@@ -140,6 +140,7 @@ authentication = Blueprint("authentication", __name__)  #custom route
 def register_user():
 	#data = request.form.to_dict()
 	email=request.args.get('email')
+	
 	#email = data['email']
 	#password = data['password']
 	return jsonify(status=email)
