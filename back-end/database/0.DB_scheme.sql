@@ -40,7 +40,7 @@ CREATE TABLE User (
   Password_salt varchar(255) NOT NULL,
   Name        varchar(32) NOT NULL,
   Surname     varchar(32) NOT NULL,
-  Birthdate   date NOT NULL,
+  Birthdate   date NOT NULL,    -- YYYY-MM-DD
   BonusPoints int DEFAULT 0 CHECK (BonusPoints>=0) NOT NULL,
   Phone       bigint UNIQUE CHECK((Phone >= 2000000000 AND Phone <=2999999999) OR (Phone <= 6999999999 AND Phone >= 6900000000)),
   PRIMARY KEY (UserID) ,
