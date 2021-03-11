@@ -36,7 +36,8 @@ CREATE TABLE Provider (
 CREATE TABLE User (
   UserID      int NOT NULL AUTO_INCREMENT,
   username    varchar(32) NOT NULL UNIQUE,
-  Password varchar(1024) NOT NULL, -- for demonstration purposes all passwords are 'userpass'
+  Password_hash varchar(255) NOT NULL,
+  Password_salt varchar(255) NOT NULL,
   Name        varchar(32) NOT NULL,
   Surname     varchar(32) NOT NULL,
   Birthdate   date NOT NULL,
@@ -139,7 +140,8 @@ CREATE TABLE Session (
 CREATE TABLE Admin (
   AdminID      int NOT NULL AUTO_INCREMENT,
   username    varchar(32) NOT NULL UNIQUE,
-  Password varchar(1024) NOT NULL, -- for demonstration purposes all passwords are 'adminpass'
+  Password_hash varchar(255) NOT NULL,
+  Password_salt varchar(255) NOT NULL,
   Name        varchar(32),
   Surname     varchar(32),
   PRIMARY KEY (AdminID) ,
