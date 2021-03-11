@@ -36,11 +36,11 @@ CREATE TABLE Provider (
 CREATE TABLE User (
   UserID      int NOT NULL AUTO_INCREMENT,
   username    varchar(32) NOT NULL UNIQUE,
+  email       varchar(255) UNIQUE NOT NULL,
   Password_hash varchar(255) NOT NULL,
   Password_salt varchar(255) NOT NULL,
   Name        varchar(32) NOT NULL,
   Surname     varchar(32) NOT NULL,
-  Birthdate   date NOT NULL,    -- YYYY-MM-DD
   BonusPoints int DEFAULT 0 CHECK (BonusPoints>=0) NOT NULL,
   Phone       bigint UNIQUE CHECK((Phone >= 2000000000 AND Phone <=2999999999) OR (Phone <= 6999999999 AND Phone >= 6900000000)),
   PRIMARY KEY (UserID) ,
