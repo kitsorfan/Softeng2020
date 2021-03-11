@@ -156,7 +156,43 @@ def login_user():
     pass
 
 
+def generate_jwt_token(content):
+    encoded_content = jwt.encode(content, JWT_SECRET_KEY, algorithm="HS256")
+    token = str(encoded_content).split("'")[1]
+    return token
 
+
+
+# utils.py
+def validate_user(username, password):
+    current_user = db_read("""SELECT * FROM user WHERE username = %s""", (username,))
+
+    if len(current_user) == 1:
+        saved_password_hash = current_user[0]["password_hash"]
+        saved_password_salt = current_user[0]["password_salt"]
+        password_hash = generate_hash(password, saved_password_salt)
+
+        if password_hash == saved_password_hash:
+            user_id = current_user[0]["id"]
+            jwt_token = generate_jwt_token({"id": user_id})
+            return jwt_token
+        else:
+            return False
+
+    else:
+        return False
+
+# blueprint_auth.py
+def login_user():
+    user_username = request.json["username"]
+    user_password = request.json["password"]
+
+    user_token = validate_user(user_username, user_password)
+
+    if user_token:
+        return jsonify({"jwt_token": user_token})
+    else:
+        Response({"token":"incorrect"})
 
 #---------------------------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------------------
@@ -186,7 +222,7 @@ def healthcheck():
 
 
 # blueprint_auth.py
-@app.route('/admin/register', methods=['POST'])
+
 def register_user():
     user_email = request.json["email"]
     user_password = request.json["password"]
@@ -214,7 +250,7 @@ def register_user():
 
 """
 # blueprint_auth.py
-@app.route('/admin/register', methods=['GET'])
+
 def register_user():
     username = request.json["username"]
     user_password = request.json["password"]
