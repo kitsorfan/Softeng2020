@@ -1,4 +1,4 @@
-# e-Lectra Project by The Charging Aces:
+args.get# e-Lectra Project by The Charging Aces:
 # ~Stelios Kandylakis
 # ~Margarita   Oikonomakou
 # ~Kitsos      Orfanopoulos
@@ -139,8 +139,17 @@ authentication = Blueprint("authentication", __name__)
 @app.route("/register", methods=["POST"])
 def register_user():
 	data = request.form.to_dict()
-	email = data['email']
-	password = data['password']
+	email = request.args.get('email')
+    username = request.args.get('username')
+    user_password = request.args.get('password')
+    birth_month	=request.args.get('Birth_month')
+    Name = request.args.get('Name')
+    Surname = request.args.get('Surname')
+    Birth_year = request.args.get('Birth_year')
+    Birth_day = request.args.get('Birth_day')
+    Phone = request.args.get('Phone')
+    Birthdate=Birth_year+"/"+Birth_month+"/"+Birth_day
+
 	return jsonify(status="ok")
 
 
