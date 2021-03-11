@@ -165,7 +165,7 @@ def generate_jwt_token(content):
 
 # utils.py
 def validate_user(username, password):
-    current_user = db_read("""SELECT * FROM user WHERE username = %s""", (username,))
+    current_user = db_read("""SELECT * FROM user WHERE username = %s""", (username))
 
     if len(current_user) == 1:
         saved_password_hash = current_user[0]["password_hash"]
@@ -224,36 +224,34 @@ def healthcheck():
 # blueprint_auth.py
 
 def register_user():
-    username = request.json["username"]
-    user_password = request.json["password"]
-    user_confirm_password = request.json["confirm_password"]
-	return {"hello":""}
-    birth_month	=request.json["Birth_month"]
-    Name = request.json["Name"]
-    Surname = request.json["Surname"]
-    Birth_year = request.json["Birth_year"]
-    Birth_day = request.json["Birth_day"]
-    Phone = request.json["Phone"]
-    Birthdate=Birth_year+"/"+Birth_month+"/"+Birth_day
+	username = request.json["username"]
+	user_password = request.json["password"]
+	birth_month	=request.json["Birth_month"]
+	Name = request.json["Name"]
+	Surname = request.json["Surname"]
+	Birth_year = request.json["Birth_year"]
+	Birth_day = request.json["Birth_day"]
+	Phone = request.json["Phone"]
+	Birthdate=Birth_year+"/"+Birth_month+"/"+Birth_day
 
 	if user_password == user_confirm_password and validate_user_input(
         "authentication", username=username, password=user_password
     ):
-        password_salt = generate_salt()
-        password_hash = generate_hash(user_password, password_salt)
+		password_salt = generate_salt()
+		password_hash = generate_hash(user_password, password_salt)
 
-        if db_write(
-            """INSERT INTO user (username, password_hash, password_salt, Name, Surname, Birthdate, Phone) VALUES (%s, %s, %s, %s, %s, %s, %s)""",
-            (user_email, password_hash, password_salt, Name, Surname, Birthdate, Phone),
-        ):
-            # Registration Successful
-            return Response(status=201)
-        else:
-            # Registration Failed
-            return Response(status=409)
-    else:
-        # Registration Failed
-        return Response(status=400)
+		if db_write(
+			"""INSERT INTO user (username, password_hash, password_salt, Name, Surname, Birthdate, Phone) VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+			(string(username), password_hash, password_salt, Name, Surname, string(Birthdate), string(Phone))
+		):
+			# Registration Successful
+			return Response(status=201)
+		else:
+			# Registration Failed
+			return Response(status=409)
+	else:
+		# Registration Failed
+		return Response(status=400)
 
 
 """
@@ -300,5 +298,4 @@ def register_user():
 
 
 #to avoid some problems with dependecies, but it  doesn't work
-#from blueprint_auth import authentication
-#app.register_blueprint(authentication, url_prefix="/api/auth")
+app.register_blueprint(authentication, url_prefix="/api/auth")
