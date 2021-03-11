@@ -224,19 +224,27 @@ def healthcheck():
 # blueprint_auth.py
 
 def register_user():
-    user_email = request.json["email"]
+    username = request.json["username"]
     user_password = request.json["password"]
     user_confirm_password = request.json["confirm_password"]
+	return {"hello":""}
+    birth_month	=request.json["Birth_month"]
+    Name = request.json["Name"]
+    Surname = request.json["Surname"]
+    Birth_year = request.json["Birth_year"]
+    Birth_day = request.json["Birth_day"]
+    Phone = request.json["Phone"]
+    Birthdate=Birth_year+"/"+Birth_month+"/"+Birth_day
 
-    if user_password == user_confirm_password and validate_user_input(
-        "authentication", email=user_email, password=user_password
+	if user_password == user_confirm_password and validate_user_input(
+        "authentication", username=username, password=user_password
     ):
         password_salt = generate_salt()
         password_hash = generate_hash(user_password, password_salt)
 
         if db_write(
-            """INSERT INTO users (email, password_salt, password_hash) VALUES (%s, %s, %s)""",
-            (user_email, password_salt, password_hash),
+            """INSERT INTO user (username, password_hash, password_salt, Name, Surname, Birthdate, Phone) VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+            (user_email, password_hash, password_salt, Name, Surname, Birthdate, Phone),
         ):
             # Registration Successful
             return Response(status=201)
