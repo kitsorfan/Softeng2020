@@ -150,13 +150,13 @@ def register_user():
 	password_salt = generate_salt()
 	password_hash = generate_hash(password, password_salt)
 	username_taken = db_read("""SELECT * FROM user WHERE username = %s""", (username,))
-	phone_taken = db_read("""SELECT * FROM user WHERE username = %s""", (username,))
+	phone_taken = db_read("""SELECT * FROM user WHERE phone = %s""", (phone,))
 
 	if len(username_taken) == 0:
 		if len(phone_taken)==0:
 			if db_write(
-				"INSERT INTO user (username, Password_hash, Password_salt) VALUES (%s, %s, %s)",
-				(username, password_hash, password_salt)
+				"INSERT INTO user (username, Password_hash, Password_salt, Name, Surname, Phone) VALUES (%s, %s, %s, %s, %s, %s)",
+				(username, password_hash, password_salt, name, surname, phone)
 			):
 				# Registration Successful
 				return jsonify(username=username, password=password_hash, salt=password_salt, birthdate=birthdate, name=name, surname=surname, Phone=phone)
