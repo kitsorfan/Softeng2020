@@ -31,7 +31,9 @@ from flask_restful import Api, Resource, reqparse, abort, fields, marshal_with
 import flask_restx
 from flask_mysqldb import MySQL
 import mysql.connector
+from hashlib import pbkdf2_hmac
 
+import requests
 
 import os
 import hashlib
@@ -61,7 +63,6 @@ mysql = MySQL(app)
 
 #@@@@@@@@@@@@@@@@@@@@@@-- Password Hashing --@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-
 def generate_hash(plain_password, password_salt):
     password_hash = pbkdf2_hmac(
         "sha256",
@@ -74,7 +75,7 @@ def generate_hash(plain_password, password_salt):
 
 def generate_salt():
     salt = os.urandom(32)
-    return salt.hex
+    return salt.hex()
 
 
 #@@@@@@@@@@@@@@@@@@@@@@-- DB auxilary --@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -133,23 +134,15 @@ def encode_auth_token(self, user_id):
     except Exception as e:
         return e
 
-
-# Auxilary
-
-def validate_user_input(input_type, **kwargs):
-    if input_type == "authentication":
-        if len(kwargs["username"]) <= 255 and len(kwargs["password"]) <= 255:
-            return True
-        else:
-            return False
-
-# Auxilary_end
-
 authentication = Blueprint("authentication", __name__)
 
-@authentication.route("/register", methods=["POST"])
+@app.route("/register", methods=["POST"])
 def register_user():
-    pass
+	data = request.form.to_dict()
+	email = data['email']
+	password = data['password']
+	return jsonify(status="ok")
+
 
 @authentication.route("/login", methods=["POST"])
 def login_user():
@@ -222,7 +215,7 @@ def healthcheck():
 
 
 # blueprint_auth.py
-
+"""
 def register_user():
 	username = request.json["username"]
 	user_password = request.json["password"]
@@ -241,7 +234,7 @@ def register_user():
 		password_hash = generate_hash(user_password, password_salt)
 
 		if db_write(
-			"""INSERT INTO user (username, password_hash, password_salt, Name, Surname, Birthdate, Phone) VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+			"INSERT INTO user (username, password_hash, password_salt, Name, Surname, Birthdate, Phone) VALUES (%s, %s, %s, %s, %s, %s, %s)",
 			(string(username), password_hash, password_salt, Name, Surname, string(Birthdate), string(Phone))
 		):
 			# Registration Successful
@@ -252,46 +245,8 @@ def register_user():
 	else:
 		# Registration Failed
 		return Response(status=400)
-
-
 """
-# blueprint_auth.py
 
-def register_user():
-    username = request.json["username"]
-    user_password = request.json["password"]
-    user_confirm_password = request.json["confirm_password"]
-	return {"hello":""}
-    birth_month	=request.json["Birth_month"]
-    Name = request.json["Name"]
-    Surname = request.json["Surname"]
-    Birth_year = request.json["Birth_year"]
-    Birth_day = request.json["Birth_day"]
-    Phone = request.json["Phone"]
-    Birthdate=Birth_year+"/"+Birth_month+"/"+Birth_day
-
-    if user_password == user_confirm_password and validate_user_input(
-        "authentication", email=user_email, password=user_password
-    ):
-        password_salt = generate_salt()
-        password_hash = generate_hash(user_password, password_salt)
-
-        if db_write(
-            "INSERT INTO user (username, password_hash, password_salt, Name, Surname, Birthdate, Phone) VALUES (%s, %s, %s, %s, %s, %s, %s)",
-            (user_email, password_hash, password_salt, Name, Surname, Birthdate, Phone)
-        ):
-            # Registration Successful
-            return Response(status=201)
-        else:
-            # Registration Failed
-            return Response(status=409)
-    else:
-        # Registration Failed
-        return Response(status=400)
-
-
-
-"""
 
 
 
