@@ -144,29 +144,33 @@ def register_user():
 	password = request.args.get('password')
 	name = request.args.get('name')
 	surname = request.args.get('surname')
-	birthdate = request.args.get('birthdate')
+	email = request.args.get('email')
 	phone = request.args.get('phone')
 	#current_user = db_read("""SELECT * FROM user WHERE username = %s""", (username))
 	password_salt = generate_salt()
 	password_hash = generate_hash(password, password_salt)
 	username_taken = db_read("""SELECT * FROM user WHERE username = %s""", (username,))
 	phone_taken = db_read("""SELECT * FROM user WHERE phone = %s""", (phone,))
+	email_taken = db_read("""SELECT * FROM user WHERE email = %s""", (email,))
 
-	if len(username_taken) == 0:
-		if ((len(phone_taken)== 0 and phone.isnumeric()) and ((int(phone) >= 2000000000 and int(phone) <=2999999999) or (int(phone) <= 6999999999 and int(phone) >= 6900000000))) :
-			if db_write(
-				"INSERT INTO user (username, Password_hash, Password_salt, Name, Surname, Phone) VALUES (%s, %s, %s, %s, %s, %s)",
-				(username, password_hash, password_salt, name, surname, phone)
-			):
-				# Registration Successful
-				return jsonify(username=username, password=password_hash, salt=password_salt, birthdate=birthdate, name=name, surname=surname, Phone=phone)
+	if len(email_taken)==0:
+		if len(username_taken) == 0:
+			if ((len(phone_taken)== 0 and phone.isnumeric()) and ((int(phone) >= 2000000000 and int(phone) <=2999999999) or (int(phone) <= 6999999999 and int(phone) >= 6900000000))) :
+				if db_write(
+					"INSERT INTO user (username, Password_hash, Password_salt, Name, Surname, Phone, Email) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+					(username, password_hash, password_salt, name, surname, phone, email)
+				):
+					# Registration Successful
+					return jsonify(status="Succesful Insertion", username=username)
+				else:
+					# Registration Failed
+					return jsonify(status="fail:unknown")
 			else:
-				# Registration Failed
-				return jsonify(status="fail:unknown (perhaps birthdate format not accepted, must be YYYY-MM-DD)")
+				return jsonify(status="fail: phone is taken or invalid")
 		else:
-			return jsonify(status="fail: phone is taken or invalid")
+			return jsonify(status="fail: username is taken")
 	else:
-		return jsonify(status="fail: username is taken")
+		return jsonify(status="fail: email is taken")
 
 
 
