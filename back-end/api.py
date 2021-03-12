@@ -23,7 +23,6 @@
 # https://medium.com/@karthikeyan.ranasthala/build-a-jwt-based-authentication-rest-api-with-flask-and-mysql-5dc6d3d1cb82
 
 
-
 #@@@@@@@@@@@@@@@@@@@@@@-- Modules --@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # Some libraries might be useless (copied-pasted from online tutorials)
 from flask import Flask, Blueprint, request, jsonify
@@ -32,15 +31,15 @@ import flask_restx
 from flask_mysqldb import MySQL
 import mysql.connector
 from hashlib import pbkdf2_hmac
-
-
 import requests
-
 import os
 import hashlib
 import datetime
 import jwt
 
+#our auxilary files
+import utils
+import DB_queries
 
 #@@@@@@@@@@@@@@@@@@@@@@-- Api Creation --@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
@@ -48,67 +47,6 @@ app = Flask(__name__)
 
 if __name__ == "__main__":
 	app.run(debug=True)
-
-
-#@@@@@@@@@@@@@@@@@@@@@@-- DB conection --@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-#   we are using the default port 3306
-
-app.config['MYSQL_HOST'] = '127.0.0.1'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'sqlpassword'
-app.config['MYSQL_DB'] = 'project_e_lectra'
-app.config['MYSQL_CURSORCLASS'] = 'DictCursor' #optional
-
-
-mysql = MySQL(app)
-
-#@@@@@@@@@@@@@@@@@@@@@@-- Password Hashing --@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
-def generate_hash(plain_password, password_salt):
-    password_hash = pbkdf2_hmac(
-        "sha256",
-        b"%b" % bytes(plain_password, "utf-8"),
-        b"%b" % bytes(password_salt, "utf-8"),
-        10000,
-    )
-    return password_hash.hex()
-
-
-def generate_salt():
-    salt = os.urandom(32)
-    return salt.hex()
-
-
-#@@@@@@@@@@@@@@@@@@@@@@-- DB auxilary --@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-def db_write(query, params):
-    cur = mysql.connection.cursor()
-    try:
-        cur.execute(query, params)
-        mysql.connection.commit()
-        cur.close()
-
-        return True
-
-    except:
-        cur.close()
-        return False
-
-def db_read(query, params=None):
-    cur = mysql.connection.cursor()
-    if params:
-        cur.execute(query, params)
-    else:
-        cur.execute(query)
-
-    entries = cur.fetchall()
-    cur.close()
-
-    content = []
-
-    for entry in entries:
-        content.append(entry)
-
-    return content
 
 
 
@@ -181,7 +119,7 @@ def login_user():
 	payload=dict(request.form)
 	user_username=payload['username']
 	user_password=payload['password']
-	
+
 	current_user = db_read("""SELECT * FROM user WHERE Username = %s""", (user_username,))
 	if len(current_user) == 1:
 		saved_password_hash = current_user[0]["Password_hash"]
@@ -205,11 +143,6 @@ def generate_jwt_token(content):
     return token
 
 
-
-# utils.py
-
-
-# blueprint_auth.py
 
 
 #---------------------------------------------------------------------------------------------------------------------
