@@ -178,8 +178,10 @@ def register_user():
 
 @app.route("/login", methods=["POST"])
 def login_user():
-	user_username = request.args.get("username")
-	user_password = request.args.get("password")
+	payload=dict(request.form)
+	user_username=payload['username']
+	user_password=payload['password']
+	
 	current_user = db_read("""SELECT * FROM user WHERE Username = %s""", (user_username,))
 	if len(current_user) == 1:
 		saved_password_hash = current_user[0]["Password_hash"]
