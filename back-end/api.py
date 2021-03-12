@@ -187,11 +187,12 @@ def login_user():
 		password_hash = generate_hash(user_password, saved_password_salt)
 		if (password_hash == saved_password_hash):
 			user_id = current_user[0]["UserID"]
-			return jsonify(hello=user_id)
+			jwt_token = generate_jwt_token({"id": user_id})
+			return jsonify(token=jwt_token)
 		else:
-			return jsonify(hello="not hello")
+			return jsonify(status="password incorrect")
 	else:
-		return jsonify(hello="not hello")
+		return jsonify(status="username incorrect")
 
 
 
