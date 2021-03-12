@@ -32,8 +32,14 @@ import flask_restx
 from flask_mysqldb import MySQL
 import mysql.connector
 from hashlib import pbkdf2_hmac
-import requests
+from flask import Response
 
+from flask_jwt_extended import create_access_token
+from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import jwt_required
+from flask_jwt_extended import JWTManager
+
+import requests
 import os
 import hashlib
 import datetime
@@ -60,7 +66,7 @@ app.config['MYSQL_CURSORCLASS'] = 'DictCursor' #optional
 
 mysql = MySQL(app)
 
-
+jwtapp = JWTManager(app)
 
 
 #@@@@@@@@@@@@@@@@@@@@@@-- DB auxilary --@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -114,6 +120,11 @@ def generate_salt():
 #@@@@@@@@@@@@@@@@@@@@@@-- JWT --@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 JWT_SECRET_KEY="SomeRandomSecretPhrase"
+app.config['JWT_SECRET_KEY']="SomeRandomSecretPhrase"
+app.config['JWT_TOKEN_LOCATION'] = 'headers'
+app.config['JWT_HEADER_NAME']='X-OBSERVATORY-AUTH'
+app.config['JWT_HEADER_TYPE']="Bearer"
+
 
 def generate_jwt_token(content):
     encoded_content = jwt.encode(content, JWT_SECRET_KEY, algorithm="HS256")
@@ -143,7 +154,7 @@ def home():
 #🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨-- REgister --🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨
 
 
-@app.route("/register", methods=["POST"])
+@baseURL.route("/register", methods=["POST"])
 def register_user():
 
 	username = request.args.get('username')
@@ -196,7 +207,7 @@ def login_user():
 		if (password_hash == saved_password_hash):
 			user_id = current_user[0]["UserID"]
 			payload = {
-	            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, hours=4),
+	            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=5),
 	            'iat': datetime.datetime.utcnow(),
 	            'sub': user_id
 	        }
@@ -209,12 +220,19 @@ def login_user():
 
 
 
+#🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥-- Logout --🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥
+
+@baseURL.route("/logout", methods=["POST"])
+@jwt_required()
+def logout_user():
+	#response = requests.get('https://localhost:8765/evcharge/api/logout', headers={'Authorization': 'access_token myToken'})
+		return Response(status=200)
+
 
 
 #🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩-- DB Healhcheck --🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩
 #   This is an auxilary endpoint that shows the user that the DB is connected
 #   and works properly.
-
 
 @baseURL.route('/admin/healthcheck', methods=['GET'])
 def healthcheck():
