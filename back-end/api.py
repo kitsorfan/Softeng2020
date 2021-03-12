@@ -176,48 +176,38 @@ def register_user():
 
 
 
-@authentication.route("/login", methods=["POST"])
+@app.route("/login", methods=["POST"])
 def login_user():
-    pass
+	user_username = request.args.get("username")
+	user_password = request.args.get("password")
+	current_user = db_read("""SELECT * FROM user WHERE Username = %s""", (user_username,))
+	if len(current_user) == 1:
+		saved_password_hash = current_user[0]["Password_hash"]
+		saved_password_salt = current_user[0]["Password_salt"]
+		password_hash = generate_hash(user_password, saved_password_salt)
+		if (password_hash == saved_password_hash):
+			user_id = current_user[0]["UserID"]
+			return jsonify(hello=user_id)
+		else:
+			return jsonify(hello="not hello")
+	else:
+		return jsonify(hello="not hello")
+
+
 
 
 def generate_jwt_token(content):
     encoded_content = jwt.encode(content, JWT_SECRET_KEY, algorithm="HS256")
-    token = str(encoded_content).split("'")[1]
+    token = str(encoded_content).split("'")[0]
     return token
 
 
 
 # utils.py
-def validate_user(username, password):
-    current_user = db_read("""SELECT * FROM user WHERE username = %s""", (username))
 
-    if len(current_user) == 1:
-        saved_password_hash = current_user[0]["password_hash"]
-        saved_password_salt = current_user[0]["password_salt"]
-        password_hash = generate_hash(password, saved_password_salt)
-
-        if password_hash == saved_password_hash:
-            user_id = current_user[0]["id"]
-            jwt_token = generate_jwt_token({"id": user_id})
-            return jwt_token
-        else:
-            return False
-
-    else:
-        return False
 
 # blueprint_auth.py
-def login_user():
-    user_username = request.json["username"]
-    user_password = request.json["password"]
 
-    user_token = validate_user(user_username, user_password)
-
-    if user_token:
-        return jsonify({"jwt_token": user_token})
-    else:
-        Response({"token":"incorrect"})
 
 #---------------------------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------------------
@@ -243,45 +233,6 @@ def healthcheck():
 		return jsonify(status="OK")
 	except:
 		return jsonify(status="failed")
-
-
-
-# blueprint_auth.py
-"""
-def register_user():
-	username = request.json["username"]
-	user_password = request.json["password"]
-	birth_month	=request.json["Birth_month"]
-	Name = request.json["Name"]
-	Surname = request.json["Surname"]
-	Birth_year = request.json["Birth_year"]
-	Birth_day = request.json["Birth_day"]
-	Phone = request.json["Phone"]
-	Birthdate=Birth_year+"/"+Birth_month+"/"+Birth_day
-
-	if user_password == user_confirm_password and validate_user_input(
-        "authentication", username=username, password=user_password
-    ):
-		password_salt = generate_salt()
-		password_hash = generate_hash(user_password, password_salt)
-
-		if db_write(
-			"INSERT INTO user (username, password_hash, password_salt, Name, Surname, Birthdate, Phone) VALUES (%s, %s, %s, %s, %s, %s, %s)",
-			(string(username), password_hash, password_salt, Name, Surname, string(Birthdate), string(Phone))
-		):
-			# Registration Successful
-			return Response(status=201)
-		else:
-			# Registration Failed
-			return Response(status=409)
-	else:
-		# Registration Failed
-		return Response(status=400)
-"""
-
-
-
-
 
 
 #to avoid some problems with dependecies, but it  doesn't work
