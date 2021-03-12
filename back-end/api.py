@@ -250,7 +250,7 @@ def healthcheck():
 #   This is not a  toy! If you use this command all the sessions at the DB are dropped
 # 	and the default admin is resetting to amdin-petrol4ever
 
-@baseURL.route('/admin/resetsessions', methods=['GET'])
+@baseURL.route('/admin/resetsessions', methods=['POST'])
 def resetsessions():
 	if not(db_write("""TRUNCATE TABLE session""","")):	#reset the sessions
 		return  jsonify(status="failed")
