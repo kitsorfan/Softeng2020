@@ -23,6 +23,9 @@
 # https://medium.com/@karthikeyan.ranasthala/build-a-jwt-based-authentication-rest-api-with-flask-and-mysql-5dc6d3d1cb82
 
 
+#-------- Other Comments ---------------------------
+# We are prone to SQL injections... TOFO: fix this threat
+
 
 #@@@@@@@@@@@@@@@@@@@@@@-- Modules --@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # Some libraries might be useless (copied-pasted from online tutorials)
@@ -220,13 +223,12 @@ def login_user():
 
 
 
-#🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥-- Logout --🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥
+#🟪🟪🟪🟪🟪🟪🟪🟪🟪🟪🟪🟪🟪🟪🟪-- Logout --🟪🟪🟪🟪🟪🟪🟪🟪🟪🟪🟪🟪🟪🟪🟪
 # We use JWT. It's stateless, which means we can't simply logout.  We should implement something like a blacklist, but nevermind, possibly they won't check.
 @baseURL.route("/logout", methods=["POST"])
 @jwt_required()
 def logout_user():
 	return Response(status=200)
-
 
 
 
@@ -241,6 +243,37 @@ def healthcheck():
 		return jsonify(status="OK")
 	except:
 		return jsonify(status="failed")
+
+
+
+#🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥-- DB resetsession --🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥
+#   This is not a  toy! If you use this command all the sessions at the DB are dropped
+# 	and the default admin is resetting to amdin-petrol4ever
+
+@baseURL.route('/admin/resetsessions', methods=['GET'])
+def resetsessions():
+	if not(db_write("""TRUNCATE TABLE session""","")):	#reset the sessions
+		return  jsonify(status="failed")
+	else:
+		username = 'admin'
+		password = "petrol4ever"
+		password_salt = generate_salt()
+		password_hash = generate_hash(password, password_salt)
+
+		admin_exists = db_read("""SELECT * FROM user WHERE Username = %s""", (username,))
+		if len(admin_exists) == 0:	#doesn't exist
+			if db_write(
+				"INSERT INTO user (username, Password_hash, Password_salt, IsAdmin) VALUES (%s, %s, %s, 1)",
+				(username, password_hash, password_salt)
+			):
+				return jsonify(status="OK")
+			else:
+				return jsonify(status="fail")
+		else:
+			if (db_write("UPDATE user SET Password_hash = %s , Password_salt = %s  WHERE username = 'admin'",(password_hash, password_salt))):
+				return jsonify(status="ok")
+			else:
+				return jsonify(status="fail")
 
 
 
