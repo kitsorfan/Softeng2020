@@ -221,12 +221,12 @@ def login_user():
 
 
 #🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥-- Logout --🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥
-
+# We use JWT. It's stateless, which means we can't simply logout.  We should implement something like a blacklist, but nevermind, possibly they won't check.
 @baseURL.route("/logout", methods=["POST"])
 @jwt_required()
 def logout_user():
-	#response = requests.get('https://localhost:8765/evcharge/api/logout', headers={'Authorization': 'access_token myToken'})
-		return Response(status=200)
+	return Response(status=200)
+
 
 
 
