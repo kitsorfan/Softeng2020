@@ -23,6 +23,7 @@
 # https://medium.com/@karthikeyan.ranasthala/build-a-jwt-based-authentication-rest-api-with-flask-and-mysql-5dc6d3d1cb82
 
 
+
 #@@@@@@@@@@@@@@@@@@@@@@-- Modules --@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # Some libraries might be useless (copied-pasted from online tutorials)
 from flask import Flask, Blueprint, request, jsonify
@@ -32,14 +33,12 @@ from flask_mysqldb import MySQL
 import mysql.connector
 from hashlib import pbkdf2_hmac
 import requests
+
 import os
 import hashlib
 import datetime
 import jwt
 
-#our auxilary files
-import utils
-import DB_queries
 
 #@@@@@@@@@@@@@@@@@@@@@@-- Api Creation --@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
@@ -49,31 +48,99 @@ if __name__ == "__main__":
 	app.run(debug=True)
 
 
+#@@@@@@@@@@@@@@@@@@@@@@-- DB conection --@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+#   we are using the default port 3306
 
-#@@@@@@@@@@@@@@@@@@@@@@-- JWT --#############@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+app.config['MYSQL_HOST'] = '127.0.0.1'
+app.config['MYSQL_USER'] = 'root'
+app.config['MYSQL_PASSWORD'] = 'sqlpassword'
+app.config['MYSQL_DB'] = 'project_e_lectra'
+app.config['MYSQL_CURSORCLASS'] = 'DictCursor' #optional
+
+
+mysql = MySQL(app)
+
+authentication = Blueprint("authentication", __name__)  #custom route
+
+
+#@@@@@@@@@@@@@@@@@@@@@@-- DB auxilary --@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+def db_write(query, params):
+    cur = mysql.connection.cursor()
+    try:
+        cur.execute(query, params)
+        mysql.connection.commit()
+        cur.close()
+
+        return True
+
+    except:
+        cur.close()
+        return False
+
+def db_read(query, params=None):
+    cur = mysql.connection.cursor()
+    if params:
+        cur.execute(query, params)
+    else:
+        cur.execute(query)
+
+    entries = cur.fetchall()
+    cur.close()
+
+    content = []
+
+    for entry in entries:
+        content.append(entry)
+
+    return content
+
+#@@@@@@@@@@@@@@@@@@@@@@-- Password Hashing --@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+def generate_hash(plain_password, password_salt):
+    password_hash = pbkdf2_hmac(
+        "sha256",
+        b"%b" % bytes(plain_password, "utf-8"),
+        b"%b" % bytes(password_salt, "utf-8"),
+        10000,
+    )
+    return password_hash.hex()
+
+
+def generate_salt():
+    salt = os.urandom(32)
+    return salt.hex()
+
+
+#@@@@@@@@@@@@@@@@@@@@@@-- JWT --@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 JWT_SECRET_KEY="SomeRandomSecretPhrase"
 
-def encode_auth_token(self, user_id):
-    """
-    Generates the Auth Token
-    :return: string
-    """
-    try:
-        payload = {
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, hours=4),
-            'iat': datetime.datetime.utcnow(),
-            'sub': user_id
-        }
-        return jwt.encode(
-            payload,
-            app.config.get('SECRET_KEY'),
-            algorithm='HS256'
-        )
-    except Exception as e:
-        return e
+def generate_jwt_token(content):
+    encoded_content = jwt.encode(content, JWT_SECRET_KEY, algorithm="HS256")
+    token = str(encoded_content).split("'")[0]
+    return token
 
-authentication = Blueprint("authentication", __name__)  #custom route
+
+
+######################################################################################################################
+#---------------------------------------------------------------------------------------------------------------------
+#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$--- API ENDPOINTS ----$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+#---------------------------------------------------------------------------------------------------------------------
+######################################################################################################################
+
+
+#⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛-- DEMO --⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛-
+
+@app.route('/demo', methods=['GET'])
+def home():
+	return '''<h1>Nothing to see here😕</h1>
+<p>Except this marvelous paragraph, which shows that everything is OK</p>'''
+
+
+
+
+#🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨-- REgister --🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨
+
 
 @app.route("/register", methods=["POST"])
 def register_user():
@@ -99,7 +166,7 @@ def register_user():
 					(username, password_hash, password_salt, name, surname, phone, email)
 				):
 					# Registration Successful
-					return jsonify(status="Succesful Insertion", username=username)
+					return jsonify(status="Successful Insertion", username=username)
 				else:
 					# Registration Failed
 					return jsonify(status="fail:unknown")
@@ -112,7 +179,7 @@ def register_user():
 
 
 
-
+#🟧🟧🟧🟧🟧🟧🟧🟧🟧🟧🟧🟧🟧🟧🟧-- Login --🟧🟧🟧🟧🟧🟧🟧🟧🟧🟧🟧🟧🟧🟧🟧
 
 @app.route("/login", methods=["POST"])
 def login_user():
@@ -127,7 +194,12 @@ def login_user():
 		password_hash = generate_hash(user_password, saved_password_salt)
 		if (password_hash == saved_password_hash):
 			user_id = current_user[0]["UserID"]
-			jwt_token = generate_jwt_token({"id": user_id})
+			payload = {
+	            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, hours=4),
+	            'iat': datetime.datetime.utcnow(),
+	            'sub': user_id
+	        }
+			jwt_token = generate_jwt_token(payload)
 			return jsonify(token=jwt_token)
 		else:
 			return jsonify(status="password incorrect")
@@ -137,29 +209,11 @@ def login_user():
 
 
 
-def generate_jwt_token(content):
-    encoded_content = jwt.encode(content, JWT_SECRET_KEY, algorithm="HS256")
-    token = str(encoded_content).split("'")[0]
-    return token
 
-
-
-
-#---------------------------------------------------------------------------------------------------------------------
-#---------------------------------------------------------------------------------------------------------------------
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$--- API ENDPOINTS ----$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-#---------------------------------------------------------------------------------------------------------------------
-#---------------------------------------------------------------------------------------------------------------------
-
-
-#@@@@@@@@@@@@@@@@@@@@@@-- DB Healhcheck --@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+#🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩-- DB Healhcheck --🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩
 #   This is an auxilary endpoint that shows the user that the DB is connected
 #   and works properly.
 
-@app.route('/demo', methods=['GET'])
-def home():
-	return '''<h1>Nothing to see here😕</h1>
-<p>Except this marvelous paragraph, which shows that everything is OK</p>'''
 
 
 @app.route('/admin/healthcheck', methods=['GET'])
@@ -169,6 +223,8 @@ def healthcheck():
 		return jsonify(status="OK")
 	except:
 		return jsonify(status="failed")
+
+
 
 
 #to avoid some problems with dependecies, but it  doesn't work
