@@ -105,6 +105,107 @@ def SessionsPerPoint(point, datefrom, dateto, format):
                 else:
                     new.write(r.content.decode("UTF-8"))
             click.echo("Data downloaded at " + newfile)
+	
+	
+@main.command()
+@click.option('--format')
+@click.option('--apikey')
+def healthcheck(format,apikey):
+    #url='https://localhost:8765/evcharge/api/healthcheck'
+    response = requests.get(url=url)
+    if format=="json":
+        print(response.json())
+    else:
+        if response.status_code != 200:
+            print('Failed to get data:', response.status_code)
+        else:
+            wrapper = csv.reader(response.text.strip().split('\n'))
+            for record in wrapper:
+                print(record)
+
+@main.command()
+@click.option('--format')
+@click.option('--apikey')
+def resetsessions(format,apikey):
+    #url='https://localhost:8765/evcharge/api/resetsessions'
+    response = requests.get(url=url)
+    if format=="json":
+        print(response.json())
+    else:
+        if response.status_code != 200:
+            print('Failed to get data:', response.status_code)
+        else:
+            wrapper = csv.reader(response.text.strip().split('\n'))
+            for record in wrapper:
+                print(record)
+
+
+
+@main.command()
+@click.option('--station')
+@click.option('--datefrom')
+@click.option('--dateto')
+@click.option('--format')
+@click.option('--apikey')
+def sessionsperstation(station, datefrom, dateto, format, apikey):
+    #url='https://localhost:8765/evcharge/api/SessionsPerStation/'+station+'/'+datefrom+'/'+dateto
+    url='http://localhost:8000/'+station+'/'+datefrom+'/'+dateto
+    print(url)
+    response = requests.get(url=url)
+    if format=="json":
+        print(response.json())
+    else:
+        if response.status_code != 200:
+            print('Failed to get data:', response.status_code)
+        else:
+            wrapper = csv.reader(response.text.strip().split('\n'))
+            for record in wrapper:
+                print(record)
+
+
+
+
+@main.command()
+@click.option('--ev')
+@click.option('--datefrom')
+@click.option('--dateto')
+@click.option('--format')
+@click.option('--apikey')
+def sessionsperev(ev, datefrom, dateto, format, apikey):
+    #url='https://localhost:8765/evcharge/api/SessionsPerEV/'+ev+'/'+datefrom+'/'+dateto
+    url='http://localhost:8000/'+ev+'/'+datefrom+'/'+dateto
+    response = requests.get(url=url)
+    print(response.url)
+    if format =="json":
+        print(response.json())
+    else:
+        if response.status_code != 200:
+            print('Failed to get data:', response.status_code)
+        else:
+            wrapper = csv.reader(response.text.strip().split('\n'))
+            for record in wrapper:
+                print(record)
+
+@main.command()
+@click.option('--provider')
+@click.option('--datefrom')
+@click.option('--dateto')
+@click.option('--format')
+@click.option('--apikey')
+def sessionsperprovider(provider, datefrom, dateto, format, apikey):
+    #url='https://localhost:8765/evcharge/api/SessionsPerProvider/'+provider+'/'+datefrom+'/'+dateto
+    url='http://localhost:8000/'+provider+'/'+datefrom+'/'+dateto
+    response = requests.get(url=url)
+    print(response.url)
+    if format =="json":
+        print(response.json())
+    else:
+        if response.status_code != 200:
+            print('Failed to get data:', response.status_code)
+        else:
+            wrapper = csv.reader(response.text.strip().split('\n'))
+            for record in wrapper:
+                print(record)
             
             
 cli = click.CommandCollection(sources = [main])
