@@ -60,7 +60,7 @@ app.config['MYSQL_CURSORCLASS'] = 'DictCursor' #optional
 
 mysql = MySQL(app)
 
-authentication = Blueprint("authentication", __name__)  #custom route
+
 
 
 #@@@@@@@@@@@@@@@@@@@@@@-- DB auxilary --@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -122,16 +122,17 @@ def generate_jwt_token(content):
 
 
 
-######################################################################################################################
+#🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪
 #---------------------------------------------------------------------------------------------------------------------
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$--- API ENDPOINTS ----$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 #---------------------------------------------------------------------------------------------------------------------
-######################################################################################################################
+#🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪
 
+baseURL = Blueprint("baseURL", __name__)  #custom route (see the EOF)
 
 #⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛-- DEMO --⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛-
 
-@app.route('/demo', methods=['GET'])
+@baseURL.route('/demo', methods=['GET'])
 def home():
 	return '''<h1>Nothing to see here😕</h1>
 <p>Except this marvelous paragraph, which shows that everything is OK</p>'''
@@ -181,7 +182,7 @@ def register_user():
 
 #🟧🟧🟧🟧🟧🟧🟧🟧🟧🟧🟧🟧🟧🟧🟧-- Login --🟧🟧🟧🟧🟧🟧🟧🟧🟧🟧🟧🟧🟧🟧🟧
 
-@app.route("/login", methods=["POST"])
+@baseURL.route("/login", methods=["POST"])
 def login_user():
 	payload=dict(request.form)
 	user_username=payload['username']
@@ -215,8 +216,7 @@ def login_user():
 #   and works properly.
 
 
-
-@app.route('/admin/healthcheck', methods=['GET'])
+@baseURL.route('/admin/healthcheck', methods=['GET'])
 def healthcheck():
 	try:
 		db_write("SELECT * FROM user","")
@@ -226,6 +226,7 @@ def healthcheck():
 
 
 
+#@@@@@@@@@@@@@@@@@@@ CUSTOM ROUTE@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+#to avoid some problems with dependecies put this line of code at EOF
 
-#to avoid some problems with dependecies, but it  doesn't work
-app.register_blueprint(authentication, url_prefix="/api/auth")
+app.register_blueprint(baseURL, url_prefix="/evcharge/api")
