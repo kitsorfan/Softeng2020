@@ -36,14 +36,15 @@ CREATE TABLE Provider (
 CREATE TABLE User (
   UserID      int NOT NULL AUTO_INCREMENT,
   username    varchar(32) NOT NULL UNIQUE,
-  email       varchar(255) UNIQUE NOT NULL,
+  email       varchar(255) UNIQUE,
   Password_hash varchar(255) NOT NULL,
   Password_salt varchar(255) NOT NULL,
-  Name        varchar(32) NOT NULL,
-  Surname     varchar(32) NOT NULL,
+  Name        varchar(32),
+  Surname     varchar(32),
   BonusPoints int DEFAULT 0 CHECK (BonusPoints>=0) NOT NULL,
   Phone       bigint UNIQUE CHECK((Phone >= 2000000000 AND Phone <=2999999999) OR (Phone <= 6999999999 AND Phone >= 6900000000)),
-  PRIMARY KEY (UserID) ,
+  IsAdmin     BOOLEAN DEFAULT 0, -- 0 means user
+  PRIMARY KEY (UserID),
   UNIQUE INDEX (UserID),
   INDEX (Surname));
 
@@ -134,16 +135,3 @@ CREATE TABLE Session (
   ON UPDATE CASCADE ON DELETE SET NULL, --  if the charging point is deleted the records will continue to show as NULL
   FOREIGN KEY (ProviderID) REFERENCES Provider(ProviderID)
   ON UPDATE CASCADE ON DELETE SET NULL);
-
-
-  -- ------------<8. ADMIN>----------------------------
-CREATE TABLE Admin (
-  AdminID      int NOT NULL AUTO_INCREMENT,
-  username    varchar(32) NOT NULL UNIQUE,
-  Password_hash varchar(255) NOT NULL,
-  Password_salt varchar(255) NOT NULL,
-  Name        varchar(32),
-  Surname     varchar(32),
-  PRIMARY KEY (AdminID) ,
-  UNIQUE INDEX (AdminID),
-  INDEX (Surname));
