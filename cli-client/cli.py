@@ -217,6 +217,99 @@ def sessionsperprovider(provider, datefrom, dateto, format, apikey):
             wrapper = csv.reader(response.text.strip().split('\n'))
             for record in wrapper:
                 print(record)
+		
+		
+
+@main.command()
+@click.option('--usermod', is_flag=True)
+@click.option('--username', is_flag=True)
+@click.option('--passw', is_flag=True)
+@click.option('--users', is_flag=True)
+@click.option('--sessionsupd', is_flag=True)
+@click.option('--source', is_flag=True)
+@click.option('--healthcheck', is_flag=True)
+@click.option('--resetsessions', is_flag=True)
+@click.option('--format', is_flag=True)
+@click.option('--apikey', is_flag=True)
+def admin(usermod, username, passw, users, sessionsupd, format, apikey):
+    if usermode:
+        if username:
+            if passw:
+                #{baseURL}/admin/usermod/:username/:password
+                url='https://localhost:8765/evcharge/api/admin/usermod/'+username+'/'+passw
+                response = requests.get(url=url)
+                if format =="json":
+                    print(response.json())
+                else:
+                    if response.status_code != 200:
+                        print('Failed to get data:', response.status_code)
+                    else:
+                        wrapper = csv.reader(response.text.strip().split('\n'))
+                        for record in wrapper:
+                            print(record)
+
+
+    elif users:
+        url='https://localhost:8765/evcharge/api/admin/usermod/'+username+'/'+passw
+        response = requests.get(url=url)
+        if format =="json":
+            print(response.json())
+        else:
+            if response.status_code != 200:
+                print('Failed to get data:', response.status_code)
+            else:
+                wrapper = csv.reader(response.text.strip().split('\n'))
+                for record in wrapper:
+                    print(record)
+
+
+
+
+
+    elif healthcheck:
+        url='https://localhost:8765/evcharge/api/admin/healthcheck'
+        response = requests.get(url=url)
+        if format=="json":
+            print(response.json())
+        else:
+            if response.status_code != 200:
+                print('Failed to get data:', response.status_code)
+	     else:
+                wrapper = csv.reader(response.text.strip().split('\n'))
+                for record in wrapper:
+                    print(record)
+
+
+
+
+
+
+
+    elif sessionsupd:
+        url='https://localhost:8765/evcharge/api/admin/system/sessionsupd'
+        if os.path.exists(source):
+                files = {'file': ('source', open(source, 'r'))}
+                r = requests.post(url, files = files)
+                if errorhandling(r):
+                    parsed = json.loads(r.json())
+                    print(json.dumps(parsed, indent=2, sort_keys=True))
+                    click.echo("Successfully uploaded data")
+            else:
+                click.echo("You need to provide a source file")
+
+
+    elif resetsessions:
+        url='https://localhost:8765/evcharge/api/admin/resetsessions'
+        response = requests.get(url=url)
+        if format =="json":
+            print(response.json())
+        else:
+            if response.status_code != 200:
+                print('Failed to get data:', response.status_code)
+            else:
+                wrapper = csv.reader(response.text.strip().split('\n'))
+                for record in wrapper:
+                    print(record)
 
 
 cli = click.CommandCollection(sources = [main])
