@@ -298,7 +298,6 @@ def usermod(username, password):
 	is_admin = current_user[0]["IsAdmin"]
 
 	if (is_admin==1):
-		current_user = db_read("""SELECT * FROM user WHERE username = %s""", (username,))
 		username_taken = db_read("""SELECT * FROM user WHERE username = %s""", (username,))
 		if len(username_taken) == 0:
 			if db_write(
@@ -313,6 +312,44 @@ def usermod(username, password):
 				return jsonify(status="successful update")
 			else:
 				return jsonify(status="fail")
+	else:
+		return jsonify(status="fail: no admin permissions")
+
+
+
+#🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦-- usermod --🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦
+#   Only admin
+#	This is a method to add a new user, or update their password
+
+@baseURL.route('/admin/users/<username>', methods=['GET'])
+@jwt_required()
+def usermod(username):
+
+	#parse the arguments from the URL and create the salt
+	g.username = username
+	password_salt = generate_salt()
+	password_hash = generate_hash(password, password_salt)
+
+	#firstly we have to check whether we have an admin OR AN IMPOSTOR!
+	payload=get_jwt()	#get the whole jwt token
+	id=payload["sub"]	#get the id of that token, that's the id of the user
+
+	current_user = db_read("""SELECT * FROM user WHERE userID = %s""", (id,))
+	is_admin = current_user[0]["IsAdmin"]
+
+	if (is_admin==1):
+		this_user = db_read("""SELECT * FROM user WHERE username = %s""", (username,))
+		userID=this_user[0]["userID"]
+		email=this_user[0]["email"]
+		Name=this_user[0]["Name"]
+		Surname=this_user[0]["Surname"]
+		BonusPoints=this_user[0]["BonusPoints"]
+		Phone=this_user[0]["Phone"]
+		IsAdmin=this_user[0]["IsAdmin"]
+		admin="no"
+		if (isAdmin==1):
+			admin="yes"
+		return jsonify(userID=userID,email=email,name=Name,surname=Surname,BonusPoints=BonusPoints,phone=Phone,admin=admin)
 	else:
 		return jsonify(status="fail: no admin permissions")
 
