@@ -317,9 +317,9 @@ def usermod(username, password):
 
 
 
-#🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦-- usermod --🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦
+#🟪🟪🟪🟪🟪🟪🟪🟪🟪🟪🟪🟪🟪🟪-- users --🟪🟪🟪🟪🟪🟪🟪🟪🟪🟪🟪🟪🟪🟪
 #   Only admin
-#	This is a method to add a new user, or update their password
+#	This is a method to see the full details of a users
 
 @baseURL.route('/admin/users/<username>', methods=['GET'])
 @jwt_required()
