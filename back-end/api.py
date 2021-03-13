@@ -323,12 +323,10 @@ def usermod(username, password):
 
 @baseURL.route('/admin/users/<username>', methods=['GET'])
 @jwt_required()
-def usermod(username):
+def users(username):
 
 	#parse the arguments from the URL and create the salt
 	g.username = username
-	password_salt = generate_salt()
-	password_hash = generate_hash(password, password_salt)
 
 	#firstly we have to check whether we have an admin OR AN IMPOSTOR!
 	payload=get_jwt()	#get the whole jwt token
@@ -339,16 +337,16 @@ def usermod(username):
 
 	if (is_admin==1):
 		this_user = db_read("""SELECT * FROM user WHERE username = %s""", (username,))
-		userID=this_user[0]["userID"]
-		email=this_user[0]["email"]
-		Name=this_user[0]["Name"]
-		Surname=this_user[0]["Surname"]
-		BonusPoints=this_user[0]["BonusPoints"]
-		Phone=this_user[0]["Phone"]
-		IsAdmin=this_user[0]["IsAdmin"]
-		admin="no"
-		if (isAdmin==1):
-			admin="yes"
+		userID = this_user[0]["UserID"]
+		email = this_user[0]["email"]
+		Name = this_user[0]["Name"]
+		Surname = this_user[0]["Surname"]
+		BonusPoints = this_user[0]["BonusPoints"]
+		Phone = this_user[0]["Phone"]
+		ΙsAdmin = this_user[0]["IsAdmin"]
+		admin = "no"
+		if (ΙsAdmin == 1):
+			admin = "yes"
 		return jsonify(userID=userID,email=email,name=Name,surname=Surname,BonusPoints=BonusPoints,phone=Phone,admin=admin)
 	else:
 		return jsonify(status="fail: no admin permissions")
