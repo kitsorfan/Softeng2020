@@ -353,6 +353,14 @@ def users(username):
 
 
 
+#🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨-- sessionupd --🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨
+#   Only admin
+#	This is a method that emulates the way real session data are added to the DB
+
+#@baseURL.route('/admin/system/sessionupd', methods=['GET'])
+#@jwt_required()
+#def sessionupd():
+
 
 
 #@@@@@@@@@@@@@@@@@@@ CUSTOM ROUTE@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
