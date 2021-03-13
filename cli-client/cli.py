@@ -1,3 +1,14 @@
+# e-Lectra Project by The Charging Aces:
+# ~Stelios Kandylakis
+# ~Margarita   Oikonomakou
+# ~Kitsos      Orfanopoulos
+# ~Vasilis     Papalexis
+# ~Georgia     Stamou
+# ~Dido        Stoikou
+# Softeng, ECE NTUA, 2021
+
+# cli code
+
 from cmd import Cmd
 import six
 import pyfiglet
@@ -11,7 +22,7 @@ import json
 import jwt
 from pathlib import Path
 
-base_url = "https://localhost:8765/evcharge/ap"
+base_url = "https://localhost:8765/evcharge/api"
 
 @click.group()
 def main():
@@ -105,8 +116,8 @@ def SessionsPerPoint(point, datefrom, dateto, format):
                 else:
                     new.write(r.content.decode("UTF-8"))
             click.echo("Data downloaded at " + newfile)
-	
-	
+
+
 @main.command()
 @click.option('--format')
 @click.option('--apikey')
@@ -206,8 +217,8 @@ def sessionsperprovider(provider, datefrom, dateto, format, apikey):
             wrapper = csv.reader(response.text.strip().split('\n'))
             for record in wrapper:
                 print(record)
-            
-            
+
+
 cli = click.CommandCollection(sources = [main])
 
 if __name__ == '__main__':
