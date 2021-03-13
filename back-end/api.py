@@ -18,6 +18,7 @@
 #export FLASK_APP=api.py		for windows set FLASK_APP=api.py
 #export FLASK_ENV=development       !!FOR DEBUG MODE!!
 #flask run -h localhost -p 8765 --cert=adhoc
+#set FLASK_DEBUG=1
 
 # --------------Online Tutorials--------------
 # https://medium.com/@karthikeyan.ranasthala/build-a-jwt-based-authentication-rest-api-with-flask-and-mysql-5dc6d3d1cb82
@@ -69,7 +70,7 @@ app.config['MYSQL_CURSORCLASS'] = 'DictCursor' #optional
 
 mysql = MySQL(app)
 
-jwt = JWTManager(app)
+jwtapp = JWTManager(app)
 
 
 #@@@@@@@@@@@@@@@@@@@@@@-- DB auxilary --@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -286,8 +287,6 @@ def usermod(username, password):
 
 	#parse the arguments from the URL and create the salt
 	g.username = username
-	if (username==none):
-		return Response(status=400)
 	g.password = password
 	password_salt = generate_salt()
 	password_hash = generate_hash(password, password_salt)
