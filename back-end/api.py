@@ -29,7 +29,7 @@
 
 #@@@@@@@@@@@@@@@@@@@@@@-- Modules --@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # Some libraries might be useless (copied-pasted from online tutorials)
-from flask import Flask, Blueprint, request, jsonify
+from flask import Flask, Blueprint, request, jsonify, g
 from flask_restful import Api, Resource, reqparse, abort, fields, marshal_with
 import flask_restx
 from flask_mysqldb import MySQL
@@ -40,7 +40,7 @@ from flask import Response
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended import jwt_required
-from flask_jwt_extended import JWTManager
+from flask_jwt_extended import JWTManager, get_jwt
 
 import requests
 import os
@@ -154,7 +154,7 @@ def home():
 
 
 
-#🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨-- REgister --🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨
+#🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨-- Register --🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨
 
 
 @baseURL.route("/register", methods=["POST"])
@@ -246,7 +246,7 @@ def healthcheck():
 
 
 
-#🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥-- DB resetsession --🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥
+#🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥-- resetsession --🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥
 #   This is not a  toy! If you use this command all the sessions at the DB are dropped
 # 	and the default admin is resetting to amdin-petrol4ever
 
@@ -274,6 +274,49 @@ def resetsessions():
 				return jsonify(status="ok")
 			else:
 				return jsonify(status="fail")
+
+
+#🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦-- usermod --🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦
+#   Only admin
+#	This is a method to add a new user, or update their password
+
+@baseURL.route('/admin/usermod/<username>/<password>', methods=['POST'])
+@jwt_required()
+def usermod(username, password):
+
+	#parse the arguments from the URL and create the salt
+	g.username = username
+	g.password = password
+	password_salt = generate_salt()
+	password_hash = generate_hash(password, password_salt)
+
+	#firstly we have to check whether we have an admin OR AN IMPOSTOR!
+	payload=get_jwt()	#get the whole jwt token
+	id=payload["sub"]	#get the id of that token, that's the id of the user
+
+	current_user = db_read("""SELECT * FROM user WHERE userID = %s""", (id,))
+	is_admin = current_user[0]["IsAdmin"]
+
+	if (is_admin==1):
+		current_user = db_read("""SELECT * FROM user WHERE username = %s""", (username,))
+		username_taken = db_read("""SELECT * FROM user WHERE username = %s""", (username,))
+		if len(username_taken) == 0:
+			if db_write(
+				"INSERT INTO user (username, Password_hash, Password_salt) VALUES (%s, %s, %s)",
+				(username, password_hash, password_salt)
+			):
+				return jsonify(status="successful Insertion")
+			else:
+				return jsonify(status="fail:unknown")
+		else:
+			if (db_write("UPDATE user SET Password_hash = %s , Password_salt = %s  WHERE username = %s",(password_hash, password_salt, username))):
+				return jsonify(status="successful update")
+			else:
+				return jsonify(status="fail")
+	else:
+		return jsonify(status="fail: no admin permissions")
+
+
 
 
 
