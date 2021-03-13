@@ -1,4 +1,8 @@
 sudo apt-get install libmysqlclient-dev
+
+DO NOT INSTALL FLASK-JWT
+ONLY FLASK-JWT-EXTENDED!!
+
 flask-mysqldb==0.2.0
 mysql==0.0.2
 mysql-connector-python==8.0.23
