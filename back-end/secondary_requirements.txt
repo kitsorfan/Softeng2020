@@ -1,0 +1,4 @@
+sudo apt-get install libmysqlclient-dev
+flask-mysqldb==0.2.0
+mysql==0.0.2
+mysql-connector-python==8.0.23

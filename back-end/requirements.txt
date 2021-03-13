@@ -4,10 +4,9 @@ chardet==4.0.0
 click==7.1.2
 cryptography==3.3.2
 enum34==1.1.10
-Flask==1.1.2
-Flask-JWT==0.3.2
-Flask-JWT-Extended==3.25.1
-gyp==0.1
+flask==1.1.2
+flask-JWT==0.3.2
+flask-JWT-Extended==3.25.1
 idna==2.10
 ipaddress==1.0.23
 itsdangerous==1.1.0
@@ -21,5 +20,5 @@ requests==2.25.1
 six==1.15.0
 urllib3==1.26.3
 Werkzeug==1.0.1
-flask_restful
-flask_jwt_extended
+flask-restx==0.2.0
+flask-restful==0.3.8
