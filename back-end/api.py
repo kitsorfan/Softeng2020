@@ -69,7 +69,7 @@ app.config['MYSQL_CURSORCLASS'] = 'DictCursor' #optional
 
 mysql = MySQL(app)
 
-jwtapp = JWTManager(app)
+jwt = JWTManager(app)
 
 
 #@@@@@@@@@@@@@@@@@@@@@@-- DB auxilary --@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -169,9 +169,9 @@ def register_user():
 	#current_user = db_read("""SELECT * FROM user WHERE username = %s""", (username))
 	password_salt = generate_salt()
 	password_hash = generate_hash(password, password_salt)
-	username_taken = db_read("""SELECT * FROM user WHERE username = %s""", (username,))
-	phone_taken = db_read("""SELECT * FROM user WHERE phone = %s""", (phone,))
-	email_taken = db_read("""SELECT * FROM user WHERE email = %s""", (email,))
+	username_taken = db_read("""SELECT * FROM User WHERE username = %s""", (username,))
+	phone_taken = db_read("""SELECT * FROM User WHERE phone = %s""", (phone,))
+	email_taken = db_read("""SELECT * FROM User WHERE email = %s""", (email,))
 
 	if len(email_taken)==0:
 		if len(username_taken) == 0:
@@ -202,7 +202,7 @@ def login_user():
 	user_username=payload['username']
 	user_password=payload['password']
 
-	current_user = db_read("""SELECT * FROM user WHERE Username = %s""", (user_username,))
+	current_user = db_read("""SELECT * FROM User WHERE Username = %s""", (user_username,))
 	if len(current_user) == 1:
 		saved_password_hash = current_user[0]["Password_hash"]
 		saved_password_salt = current_user[0]["Password_salt"]
@@ -212,7 +212,7 @@ def login_user():
 			payload = {
 	            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=5),
 	            'iat': datetime.datetime.utcnow(),
-	            'sub': user_id
+	            'sub': str(user_id)
 	        }
 			jwt_token = generate_jwt_token(payload)
 			return jsonify(token=jwt_token)
@@ -260,7 +260,7 @@ def resetsessions():
 		password_salt = generate_salt()
 		password_hash = generate_hash(password, password_salt)
 
-		admin_exists = db_read("""SELECT * FROM user WHERE Username = %s""", (username,))
+		admin_exists = db_read("""SELECT * FROM User WHERE Username = %s""", (username,))
 		if len(admin_exists) == 0:	#doesn't exist
 			if db_write(
 				"INSERT INTO user (username, Password_hash, Password_salt, IsAdmin) VALUES (%s, %s, %s, 1)",
@@ -270,7 +270,7 @@ def resetsessions():
 			else:
 				return jsonify(status="fail")
 		else:
-			if (db_write("UPDATE user SET Password_hash = %s , Password_salt = %s  WHERE username = 'admin'",(password_hash, password_salt))):
+			if (db_write("UPDATE User SET Password_hash = %s , Password_salt = %s  WHERE username = 'admin'",(password_hash, password_salt))):
 				return jsonify(status="ok")
 			else:
 				return jsonify(status="fail")
@@ -286,6 +286,8 @@ def usermod(username, password):
 
 	#parse the arguments from the URL and create the salt
 	g.username = username
+	if (username==none):
+		return Response(status=400)
 	g.password = password
 	password_salt = generate_salt()
 	password_hash = generate_hash(password, password_salt)
@@ -294,11 +296,11 @@ def usermod(username, password):
 	payload=get_jwt()	#get the whole jwt token
 	id=payload["sub"]	#get the id of that token, that's the id of the user
 
-	current_user = db_read("""SELECT * FROM user WHERE userID = %s""", (id,))
+	current_user = db_read("""SELECT * FROM User WHERE userID = %s""", (id,))
 	is_admin = current_user[0]["IsAdmin"]
 
 	if (is_admin==1):
-		username_taken = db_read("""SELECT * FROM user WHERE username = %s""", (username,))
+		username_taken = db_read("""SELECT * FROM User WHERE username = %s""", (username,))
 		if len(username_taken) == 0:
 			if db_write(
 				"INSERT INTO user (username, Password_hash, Password_salt) VALUES (%s, %s, %s)",
@@ -306,14 +308,14 @@ def usermod(username, password):
 			):
 				return jsonify(status="successful Insertion")
 			else:
-				return jsonify(status="fail:unknown")
+				return Response(status=402)
 		else:
 			if (db_write("UPDATE user SET Password_hash = %s , Password_salt = %s  WHERE username = %s",(password_hash, password_salt, username))):
 				return jsonify(status="successful update")
 			else:
-				return jsonify(status="fail")
+				return Response(status=402)
 	else:
-		return jsonify(status="fail: no admin permissions")
+		return Response(status=401)
 
 
 
@@ -336,7 +338,7 @@ def users(username):
 	is_admin = current_user[0]["IsAdmin"]
 
 	if (is_admin==1):
-		this_user = db_read("""SELECT * FROM user WHERE username = %s""", (username,))
+		this_user = db_read("""SELECT * FROM User WHERE username = %s""", (username,))
 		userID = this_user[0]["UserID"]
 		email = this_user[0]["email"]
 		Name = this_user[0]["Name"]
@@ -361,7 +363,24 @@ def users(username):
 #@jwt_required()
 #def sessionupd():
 
+#🟩🟧🟧🟧🟧🟧🟧🟧🟧🟧🟧🟩-- SessionsPerPoint --🟩🟧🟧🟧🟧🟧🟧🟧🟧🟧🟧🟩
 
+@baseURL.route('/SessionsPerPoint/<pointID>/<yyyymmdd_from>/<yyyymmdd_to>', methods=['GET'])
+@jwt_required()
+def SessionsPerPoint(pointID, yyyymmdd_from, yyyymmdd_to):
+	#parse the arguments from the URL and create the salt
+	g.pointID = pointID
+	g.yyyymmdd_from = yyyymmdd_from
+	g.yyyymmdd_to = yyyymmdd_to
+
+	if not(isdigit(pointID)):
+		return Response(status=400)
+	print(pointID)
+	from_yyyy = yyyymmdd_from[0]
+
+	current_user = db_read("""SELECT * FROM user WHERE userID = %s""", (id,))
+	is_admin = current_user[0]["IsAdmin"]
+	return Response(status=200)
 
 #@@@@@@@@@@@@@@@@@@@ CUSTOM ROUTE@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 #to avoid some problems with dependecies put this line of code at EOF
