@@ -1,7 +1,5 @@
-# CLI client
+# CLI client 🖥
 
-Ενδεικτικά περιεχόμενα:
+- Command line interface (CLI)
 
-- Command line interface (CLI).
-- CLI functional tests.
-- CLI unit tests.
+*Developped with Click Framework*
