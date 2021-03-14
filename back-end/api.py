@@ -419,7 +419,16 @@ def SessionsPerPoint(pointID, yyyymmdd_from, yyyymmdd_to):
 	current_timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 	db_write("""SET @rank=0;""",())
 	requested_sessions = db_read(""" SELECT @rank:=@rank+1 AS SessionIndex, SessionID, StartedOn, FinishedOn, Protocol, FORMAT(EnergyDelivered,2) AS EnergyDelivered, PaymentType, Ve.Type FROM session INNER JOIN vehicle AS Ve USING (VehicleID) WHERE pointID=%s AND DATE(FinishedON) BETWEEN %s AND %s""",(int(pointID), start_date, finish_date))
+
 	NumberOfChargingSessions = len(requested_sessions)
+
+
+	#special date format
+
+	for i in range(len(requested_sessions)):
+		requested_sessions[i]["StartedOn"]=requested_sessions[i]["StartedOn"].strftime("%Y-%m-%d %H:%M:%S")
+		requested_sessions[i]["FinishedOn"]=requested_sessions[i]["FinishedOn"].strftime("%Y-%m-%d %H:%M:%S")
+
 
 	return jsonify(Point=pointID, PointOperator=operator['Operator'], RequestTimestamp=current_timestamp, PeriodFrom=start_date, PeriodTo=finish_date, NumberOfChargingSessions=NumberOfChargingSessions, ChargingSessionsList=requested_sessions)
 
@@ -546,6 +555,13 @@ def SessionsPerEV(vehicleID, yyyymmdd_from, yyyymmdd_to):
 	VehicleChargingSessionsList = db_read(""" SELECT @rank:=@rank+1 AS SessionIndex, SessionID, Pr.Name, StartedOn, FinishedOn, FORMAT(EnergyDelivered,2) AS EnergyDelivered, PricePolicyRef, FORMAT(CostPerKWh,2), FORMAT(SessionCost,2)  FROM session INNER JOIN Provider AS Pr USING (ProviderID) WHERE vehicleID=%s AND DATE(FinishedON) BETWEEN %s AND %s""",(int(vehicleID), start_date, finish_date))
 	NumberOfVehicleChargingSessions = len(VehicleChargingSessionsList)
 
+	#special date format
+
+	for i in range(len(VehicleChargingSessionsList)):
+		VehicleChargingSessionsList[i]["StartedOn"]=VehicleChargingSessionsList[i]["StartedOn"].strftime("%Y-%m-%d %H:%M:%S")
+		VehicleChargingSessionsList[i]["FinishedOn"]=VehicleChargingSessionsList[i]["FinishedOn"].strftime("%Y-%m-%d %H:%M:%S")
+
+
 	return jsonify(VehicleID=vehicleID, RequestTimestamp=current_timestamp, PeriodFrom=start_date, PeriodTo=finish_date, TotalEnergyDelivered=TotalEnergyDelivered['TotalEnergyDelivered'], NumberOfVisitedPoints=VisitedPoints['NumberOfVisitedPoints'], NumberOfVehicleChargingSessions=NumberOfVehicleChargingSessions, VehicleChargingSessionsList=VehicleChargingSessionsList)
 
 
@@ -612,6 +628,11 @@ def SessionsPerProvider(providerID, yyyymmdd_from, yyyymmdd_to):
 	session se
 	INNER JOIN Chargingpoint ch USING(PointID) INNER JOIN Provider pr USING (ProviderID)
 	WHERE se.providerID=%s AND DATE(se.FinishedON) BETWEEN %s AND %s""",(int(providerID), start_date, finish_date))
+
+	for i in range(len(ProviderSession)):
+		ProviderSession[i]["StartedOn"]=ProviderSession[i]["StartedOn"].strftime("%Y-%m-%d %H:%M:%S")
+		ProviderSession[i]["FinishedOn"]=ProviderSession[i]["FinishedOn"].strftime("%Y-%m-%d %H:%M:%S")
+
 
 	return jsonify(sessions=ProviderSession)
 
