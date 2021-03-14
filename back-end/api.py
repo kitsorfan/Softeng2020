@@ -37,11 +37,18 @@ from flask_mysqldb import MySQL
 import mysql.connector
 from hashlib import pbkdf2_hmac
 from flask import Response
+from datetime import datetime
+
+import decimal
 
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended import JWTManager, get_jwt
+
+import json
+
+
 
 import requests
 import os
@@ -134,7 +141,6 @@ def generate_jwt_token(content):
     encoded_content = jwt.encode(content, JWT_SECRET_KEY, algorithm="HS256")
     token = str(encoded_content).split("'")[0]
     return token
-
 
 
 #🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪🟦🟪
@@ -326,7 +332,6 @@ def usermod(username, password):
 @jwt_required()
 def users(username):
 
-	#parse the arguments from the URL and create the salt
 	g.username = username
 
 	#firstly we have to check whether we have an admin OR AN IMPOSTOR!
@@ -367,19 +372,59 @@ def users(username):
 @baseURL.route('/SessionsPerPoint/<pointID>/<yyyymmdd_from>/<yyyymmdd_to>', methods=['GET'])
 @jwt_required()
 def SessionsPerPoint(pointID, yyyymmdd_from, yyyymmdd_to):
-	#parse the arguments from the URL and create the salt
+	#parse the args
 	g.pointID = pointID
 	g.yyyymmdd_from = yyyymmdd_from
 	g.yyyymmdd_to = yyyymmdd_to
 
-	if not(isdigit(pointID)):
+	#check point ID
+	if (not(pointID.isdigit()) or not(yyyymmdd_from.isdigit()) or not(yyyymmdd_to.isdigit())):
 		return Response(status=400)
-	print(pointID)
-	from_yyyy = yyyymmdd_from[0]
 
-	current_user = db_read("""SELECT * FROM user WHERE userID = %s""", (id,))
-	is_admin = current_user[0]["IsAdmin"]
-	return Response(status=200)
+	point_exists = db_read("""SELECT * FROM ChargingPoint WHERE PointID = %s""", (int(pointID),))
+
+	if (len(point_exists) == 0): #no such a point
+		return Response(status=400)
+
+	operatorlist = db_read("""SELECT st.Operator FROM ChargingPoint AS c INNER JOIN station AS st USING (StationID) WHERE c.PointID = %s """, (pointID,))
+	operator=operatorlist[0]
+
+	#check year
+
+	start_year = yyyymmdd_from[0] + yyyymmdd_from[1] + yyyymmdd_from[2] + yyyymmdd_from[3]
+	finish_year = yyyymmdd_to[0] + yyyymmdd_to[1] + yyyymmdd_to[2] + yyyymmdd_to[3]
+
+	current_year = datetime.datetime.now().year
+
+	if ((int(finish_year)>int(current_year)) or (int(finish_year)<int(start_year))):
+		return Response(status=400)
+
+	#check month
+	start_month = yyyymmdd_from[4] + yyyymmdd_from[5]
+	finish_month = yyyymmdd_to[4] + yyyymmdd_to[5]
+
+	if ((int(start_month)>13) or (int(finish_month)>13) or (int(start_month)<1) or (int(finish_month)<0) ):
+		return Response(status=400)
+
+	#check day
+	start_day = yyyymmdd_from[6] + yyyymmdd_from[7]
+	finish_day = yyyymmdd_to[6] + yyyymmdd_to[7]
+
+	if ((int(start_day)>31) or (int(finish_day)>31) or (int(start_day)<1) or (int(finish_day)<0)):
+		return Response(status=400)
+
+	start_date=start_year+"-"+start_month+"-"+start_day
+	finish_date=finish_year+"-"+finish_month+"-"+finish_day
+
+	current_timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+	#db_write("""SET @row_number=0""",())
+
+	requested_sessions = db_read("""SELECT SessionID, StartedOn, FinishedOn, Protocol, FLOOR(EnergyDelivered) AS EnergyDelivered, PaymentType, Ve.Type FROM session INNER JOIN vehicle AS Ve USING (VehicleID) WHERE pointID=%s AND  DATE(FinishedON) BETWEEN %s AND %s""",(int(pointID), start_date, finish_date))
+
+
+
+	return jsonify(Point=pointID, PointOperator=operator['Operator'], RequestTimestamp=current_timestamp, PeriodFrom=start_date, PeriodTo=finish_date, ChargingSessionsList=requested_sessions)
 
 #@@@@@@@@@@@@@@@@@@@ CUSTOM ROUTE@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 #to avoid some problems with dependecies put this line of code at EOF
