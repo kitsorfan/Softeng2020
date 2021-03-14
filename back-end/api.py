@@ -418,13 +418,10 @@ def SessionsPerPoint(pointID, yyyymmdd_from, yyyymmdd_to):
 
 	current_timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-	#db_write("""SET @row_number=0""",())
-
 	requested_sessions = db_read("""SELECT SessionID, StartedOn, FinishedOn, Protocol, FLOOR(EnergyDelivered) AS EnergyDelivered, PaymentType, Ve.Type FROM session INNER JOIN vehicle AS Ve USING (VehicleID) WHERE pointID=%s AND  DATE(FinishedON) BETWEEN %s AND %s""",(int(pointID), start_date, finish_date))
+	NumberOfChargingSessions = len(requested_sessions)
 
-
-
-	return jsonify(Point=pointID, PointOperator=operator['Operator'], RequestTimestamp=current_timestamp, PeriodFrom=start_date, PeriodTo=finish_date, ChargingSessionsList=requested_sessions)
+	return jsonify(Point=pointID, PointOperator=operator['Operator'], RequestTimestamp=current_timestamp, PeriodFrom=start_date, PeriodTo=finish_date, NumberOfChargingSessions=NumberOfChargingSessions, ChargingSessionsList=requested_sessions)
 
 #@@@@@@@@@@@@@@@@@@@ CUSTOM ROUTE@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 #to avoid some problems with dependecies put this line of code at EOF
