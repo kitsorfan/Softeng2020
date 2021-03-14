@@ -17,21 +17,25 @@
 
 ## Directory structure
 
-**/documentation**
-- έγγραφα τεκμηρίωσης & διαγράμματα UML
-Συγκεριμένα περιλαμβάνεται
-- Αρχείο .vpp με τα UML διαγράμματα στο περιβάλλον Visual Paradigm
-- SRS documentation
-- StRS documentation, 1 για κάθε stakeholder που εξετάζουμε
+**/documentation📃**
+- **Αρχείο .vpp** (UML διαγράμματα στο περιβάλλον Visual Paradigm)
+- **SRS documentation**
+- **StRS documentation** (1 για κάθε εξεταζόμενο stakeholder)
 
 
-**/back-end**
--
-- γεννήτριες βάσης
-- πηγαίος κώδικας και έλεγχοι του back-end της εφαρμογής
+**/back-end⚙**
+- DB scheme
+- γεννήτριες & dump DB
+- πηγαίος κώδικας API
 
-**/cli-client**
+**/cli-client🖥**
 - πηγαίος κώδικας cli εφαρμογής
 
-**/front-end**
+**/front-end📱**
 - [απουσιάζει]
+
+
+
+
+
+  *last updated: 14 March 2021*
