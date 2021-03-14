@@ -437,21 +437,13 @@ def SessionsPerPoint(pointID, yyyymmdd_from, yyyymmdd_to):
 	if (format == 'json'):
 		return jsonify(Point=pointID, PointOperator=operator['Operator'], RequestTimestamp=current_timestamp, PeriodFrom=start_date, PeriodTo=finish_date, NumberOfChargingSessions=NumberOfChargingSessions, ChargingSessionsList=requested_sessions)
 	elif (format == 'csv'):
-		with open('SessionPerPoint.csv', 'w', newline='') as file:
-		    writer = csv.writer(file)
-		    #-- first row must have the names of the columns (attibutes of the entity)
-		    writer.writerow(["Point","PointOperator", "RequestTimestamp", "PeriodFrom","PeriodTo","NumberOfChargingSessions","SessionIndex","SessionID","StartedOn","FinishedOn","Protocol","EnergyDelivered","Payment","VehicleType"])
-
-		    x=0
-		    #while x<NumberOfChargingSessions:
-		     #   (
-		      #  writer.writerow([   #one single row contain:
-
-
-		       # ])
-		        #)
-
-
+	    #-- first row must have the names of the columns (attibutes of the entity)
+		csv=""
+		csv=csv+"Point,PointOperator,RequestTimestamp,PeriodFrom,PeriodTo,NumberOfChargingSessions,SessionIndex,SessionID,StartedOn,FinishedOn,Protocol,EnergyDelivered,Payment,VehicleType\n"
+		i=0
+		while i<NumberOfChargingSessions:
+			csv=csv+str(pointID)+","+operator['Operator']+","+str(current_timestamp)+","+str(start_date)+","+ str(finish_date)+","+ str(NumberOfChargingSessions)+","+str(requested_sessions[i]["SessionIndex"])+","+str(requested_sessions[i]["SessionID"])+","+str(requested_sessions[i]["StartedOn"])+","+str(requested_sessions[i]["FinishedOn"])+","+requested_sessions[i]["Protocol"]+","+str(requested_sessions[i]["EnergyDelivered"])+","+requested_sessions[i]["PaymentType"]+","+requested_sessions[i]["Type"]+"\n"
+			i=i+1
 		return Response(csv, mimetype='text/csv')
 	else:
 		return Response(status=400)
@@ -467,6 +459,9 @@ def SessionsPerStation(stationID, yyyymmdd_from, yyyymmdd_to):
 	g.stationID = stationID
 	g.yyyymmdd_from = yyyymmdd_from
 	g.yyyymmdd_to = yyyymmdd_to
+
+	format = request.args.get('format', default=None)
+	if (format == None): format = 'json'
 
 	#check point ID
 	if (not(stationID.isdigit()) or not(yyyymmdd_from.isdigit()) or not(yyyymmdd_to.isdigit())):
@@ -516,7 +511,22 @@ def SessionsPerStation(stationID, yyyymmdd_from, yyyymmdd_to):
 	ActivePointsList = db_read("""SELECT PointID, Count(PointID) AS PointSessions, FORMAT(SUM(ses.EnergyDelivered),2) AS EnergyDelivered FROM  session ses INNER JOIN ChargingPoint ch USING(PointID) WHERE ch.StationID=%s AND EnergyDelivered>0 AND DATE(FinishedON) BETWEEN %s AND %s  GROUP BY PointID""",(stationID, start_date, finish_date))
 	NumberofActivePoints = len(ActivePointsList)
 
-	return jsonify(StationID=stationID, Operator=operator['Operator'], RequestTimestamp=current_timestamp, PeriodFrom=start_date, PeriodTo=finish_date, TotalEnergyDelivered=TotalEnergyDelivered['TotalEnergyDelivered'], NumberofActivePoints=NumberofActivePoints, SessionSummaryList=ActivePointsList)
+
+
+	if (format == 'json'):
+		return jsonify(StationID=stationID, Operator=operator['Operator'], RequestTimestamp=current_timestamp, PeriodFrom=start_date, PeriodTo=finish_date, TotalEnergyDelivered=TotalEnergyDelivered['TotalEnergyDelivered'], NumberofActivePoints=NumberofActivePoints, SessionSummaryList=ActivePointsList)
+
+	elif (format == 'csv'):
+	    #-- first row must have the names of the columns (attibutes of the entity)
+		csv=""
+		csv=csv+"StationID,Operator,RequestTimestamp,PeriodFrom,PeriodTo,TotalEnergyDelivered,NumberOfChargingSessions,NumberOfActivePoints,PointID,PointSessions,EnergyDelivered\n"
+		i=0
+		while i<NumberofActivePoints:
+			csv=csv+str(stationID)+","+operator['Operator']+","+str(current_timestamp)+","+str(start_date)+","+ str(finish_date)+","+ str(TotalEnergyDelivered['TotalEnergyDelivered'])+","+str(NumberofActivePoints)+","+str(ActivePointsList[i]["PointID"])+","+str(ActivePointsList[i]["PointSessions"])+","+str(ActivePointsList[i]["EnergyDelivered"])+"\n"
+			i=i+1
+		return Response(csv, mimetype='text/csv')
+	else:
+		return Response(status=400)
 
 
 
@@ -529,6 +539,9 @@ def SessionsPerEV(vehicleID, yyyymmdd_from, yyyymmdd_to):
 	g.stationID = vehicleID
 	g.yyyymmdd_from = yyyymmdd_from
 	g.yyyymmdd_to = yyyymmdd_to
+
+	format = request.args.get('format', default=None)
+	if (format == None): format = 'json'
 
 	#check point ID
 	if (not(vehicleID.isdigit()) or not(yyyymmdd_from.isdigit()) or not(yyyymmdd_to.isdigit())):
@@ -575,7 +588,7 @@ def SessionsPerEV(vehicleID, yyyymmdd_from, yyyymmdd_to):
 	VisitedPointslist = db_read("""SELECT COUNT(PointID) AS NumberOfVisitedPoints FROM  session WHERE VehicleID=%s AND DATE(FinishedON) BETWEEN %s AND %s""",(vehicleID, start_date, finish_date))
 	VisitedPoints=VisitedPointslist[0]
 	db_write("""SET @rank=0;""",())
-	VehicleChargingSessionsList = db_read(""" SELECT @rank:=@rank+1 AS SessionIndex, SessionID, Pr.Name, StartedOn, FinishedOn, FORMAT(EnergyDelivered,2) AS EnergyDelivered, PricePolicyRef, FORMAT(CostPerKWh,2), FORMAT(SessionCost,2)  FROM session INNER JOIN Provider AS Pr USING (ProviderID) WHERE vehicleID=%s AND DATE(FinishedON) BETWEEN %s AND %s""",(int(vehicleID), start_date, finish_date))
+	VehicleChargingSessionsList = db_read(""" SELECT @rank:=@rank+1 AS SessionIndex, SessionID, Pr.Name, StartedOn, FinishedOn, FORMAT(EnergyDelivered,2) AS EnergyDelivered, PricePolicyRef, FORMAT(CostPerKWh,2) AS CostPerKWh, FORMAT(SessionCost,2) AS SessionCost  FROM session INNER JOIN Provider AS Pr USING (ProviderID) WHERE vehicleID=%s AND DATE(FinishedON) BETWEEN %s AND %s""",(int(vehicleID), start_date, finish_date))
 	NumberOfVehicleChargingSessions = len(VehicleChargingSessionsList)
 
 	#special date format
@@ -585,7 +598,23 @@ def SessionsPerEV(vehicleID, yyyymmdd_from, yyyymmdd_to):
 		VehicleChargingSessionsList[i]["FinishedOn"]=VehicleChargingSessionsList[i]["FinishedOn"].strftime("%Y-%m-%d %H:%M:%S")
 
 
-	return jsonify(VehicleID=vehicleID, RequestTimestamp=current_timestamp, PeriodFrom=start_date, PeriodTo=finish_date, TotalEnergyDelivered=TotalEnergyDelivered['TotalEnergyDelivered'], NumberOfVisitedPoints=VisitedPoints['NumberOfVisitedPoints'], NumberOfVehicleChargingSessions=NumberOfVehicleChargingSessions, VehicleChargingSessionsList=VehicleChargingSessionsList)
+
+	if (format == 'json'):
+		return jsonify(VehicleID=vehicleID, RequestTimestamp=current_timestamp, PeriodFrom=start_date, PeriodTo=finish_date, TotalEnergyDelivered=TotalEnergyDelivered['TotalEnergyDelivered'], NumberOfVisitedPoints=VisitedPoints['NumberOfVisitedPoints'], NumberOfVehicleChargingSessions=NumberOfVehicleChargingSessions, VehicleChargingSessionsList=VehicleChargingSessionsList)
+	elif (format == 'csv'):
+		#-- first row must have the names of the columns (attibutes of the entity)
+		csv=""
+		csv=csv+"VehicleID,RequestTimestamp,PeriodFrom,PeriodTo,TotalEnergyConsumed,NumberOfVisitedPoints,NumberOfVehicleChargingSessions,SessionIndex,SessionID,EnergyProvider,StartedOn,FinishedOn,EnergyDelivered,PricePolicyRef,CostPerKWh,SessionCost\n"
+		i=0
+		while i<NumberOfVehicleChargingSessions:
+			csv=csv+str(vehicleID)+","+str(current_timestamp)+","+str(start_date)+","+ str(finish_date)+","+ str(TotalEnergyDelivered['TotalEnergyDelivered'])+","+str(VisitedPoints['NumberOfVisitedPoints'])+","+str(NumberOfVehicleChargingSessions)+","+str(VehicleChargingSessionsList[i]["SessionIndex"])+","+str(VehicleChargingSessionsList[i]["SessionID"])+","+str(VehicleChargingSessionsList[i]["StartedOn"])+","+str(VehicleChargingSessionsList[i]["FinishedOn"])+","+str(VehicleChargingSessionsList[i]["EnergyDelivered"])+","+str(VehicleChargingSessionsList[i]["PricePolicyRef"])+","+str(VehicleChargingSessionsList[i]["CostPerKWh"])+","+str(VehicleChargingSessionsList[i]["SessionCost"])+"\n"
+			i=i+1
+		return Response(csv, mimetype='text/csv')
+	else:
+		return Response(status=400)
+
+
+
 
 
 #🟩🟩🟩🟩🟧🟧🟧🟧🟩🟩🟩🟩-- 2d SessionsPerProvider --🟩🟩🟩🟩🟧🟧🟧🟧🟩🟩🟩🟩
@@ -597,6 +626,9 @@ def SessionsPerProvider(providerID, yyyymmdd_from, yyyymmdd_to):
 	g.providerID = providerID
 	g.yyyymmdd_from = yyyymmdd_from
 	g.yyyymmdd_to = yyyymmdd_to
+
+	format = request.args.get('format', default=None)
+	if (format == None): format = 'json'
 
 	#check point ID
 	if (not(providerID.isdigit()) or not(yyyymmdd_from.isdigit()) or not(yyyymmdd_to.isdigit())):
@@ -657,9 +689,19 @@ def SessionsPerProvider(providerID, yyyymmdd_from, yyyymmdd_to):
 		ProviderSession[i]["FinishedOn"]=ProviderSession[i]["FinishedOn"].strftime("%Y-%m-%d %H:%M:%S")
 
 
-	return jsonify(sessions=ProviderSession)
-
-
+	if (format == 'json'):
+		return jsonify(sessions=ProviderSession)
+	elif (format == 'csv'):
+		#-- first row must have the names of the columns (attibutes of the entity)
+		csv=""
+		csv=csv+"ProviderID,ProviderName,StationID,SessionID,VehicleID,StartedOn,FinishedO,EnergyDelivered,PricePolicyRef,CostPerKWh,TotalCost\n"
+		i=0
+		while i<len(ProviderSession):
+			csv=csv+str(providerID)+","+str(ProviderSession[i]["ProviderName"])+","+str(ProviderSession[i]["StationID"])+","+str(ProviderSession[i]["SessionID"])+","+str(ProviderSession[i]["VehicleID"])+","+str(ProviderSession[i]["StartedOn"])+","+str(ProviderSession[i]["FinishedOn"])+","+str(ProviderSession[i]["EnergyDelivered"])+","+str(ProviderSession[i]["PricePolicyRef"])+","+str(ProviderSession[i]["CostPerKWh"])+","+str(ProviderSession[i]["TotalCost"])+"\n"
+			i=i+1
+		return Response(csv, mimetype='text/csv')
+	else:
+		return Response(status=400)
 
 
 
