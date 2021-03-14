@@ -418,7 +418,7 @@ def SessionsPerPoint(pointID, yyyymmdd_from, yyyymmdd_to):
 
 	current_timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-	requested_sessions = db_read("""SELECT SessionID, StartedOn, FinishedOn, Protocol, FLOOR(EnergyDelivered) AS EnergyDelivered, PaymentType, Ve.Type FROM session INNER JOIN vehicle AS Ve USING (VehicleID) WHERE pointID=%s AND DATE(FinishedON) BETWEEN %s AND %s""",(int(pointID), start_date, finish_date))
+	requested_sessions = db_read("""SELECT SessionID, StartedOn, FinishedOn, Protocol, FORMAT(EnergyDelivered,2) AS EnergyDelivered, PaymentType, Ve.Type FROM session INNER JOIN vehicle AS Ve USING (VehicleID) WHERE pointID=%s AND DATE(FinishedON) BETWEEN %s AND %s""",(int(pointID), start_date, finish_date))
 	NumberOfChargingSessions = len(requested_sessions)
 
 	return jsonify(Point=pointID, PointOperator=operator['Operator'], RequestTimestamp=current_timestamp, PeriodFrom=start_date, PeriodTo=finish_date, NumberOfChargingSessions=NumberOfChargingSessions, ChargingSessionsList=requested_sessions)
@@ -478,13 +478,16 @@ def SessionsPerStation(stationID, yyyymmdd_from, yyyymmdd_to):
 	current_timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
-	TotalEnergyDeliveredlist = db_read("""SELECT FORMAT(SUM(ses.EnergyDelivered),0) AS TotalEnergyDelivered FROM  session ses INNER JOIN ChargingPoint ch USING(PointID) WHERE ch.StationID=%s AND DATE(FinishedON) BETWEEN %s AND %s""",(stationID, start_date, finish_date))
+	TotalEnergyDeliveredlist = db_read("""SELECT FORMAT(SUM(ses.EnergyDelivered),2) AS TotalEnergyDelivered FROM  session ses INNER JOIN ChargingPoint ch USING(PointID) WHERE ch.StationID=%s AND DATE(FinishedON) BETWEEN %s AND %s""",(stationID, start_date, finish_date))
 	TotalEnergyDelivered=TotalEnergyDeliveredlist[0]
 
-	ActivePointsList = db_read("""SELECT PointID, Count(PointID) AS PointSessions, FORMAT(SUM(ses.EnergyDelivered),0) AS EnergyDelivered FROM  session ses INNER JOIN ChargingPoint ch USING(PointID) WHERE ch.StationID=%s AND EnergyDelivered>0 AND DATE(FinishedON) BETWEEN %s AND %s  GROUP BY PointID""",(stationID, start_date, finish_date))
+	ActivePointsList = db_read("""SELECT PointID, Count(PointID) AS PointSessions, FORMAT(SUM(ses.EnergyDelivered),2) AS EnergyDelivered FROM  session ses INNER JOIN ChargingPoint ch USING(PointID) WHERE ch.StationID=%s AND EnergyDelivered>0 AND DATE(FinishedON) BETWEEN %s AND %s  GROUP BY PointID""",(stationID, start_date, finish_date))
 	NumberofActivePoints = len(ActivePointsList)
 
 	return jsonify(StationID=stationID, Operator=operator['Operator'], RequestTimestamp=current_timestamp, PeriodFrom=start_date, PeriodTo=finish_date, TotalEnergyDelivered=TotalEnergyDelivered['TotalEnergyDelivered'], NumberofActivePoints=NumberofActivePoints, SessionSummaryList=ActivePointsList)
+
+
+
 
 
 
