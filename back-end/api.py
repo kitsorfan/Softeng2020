@@ -437,21 +437,13 @@ def SessionsPerPoint(pointID, yyyymmdd_from, yyyymmdd_to):
 	if (format == 'json'):
 		return jsonify(Point=pointID, PointOperator=operator['Operator'], RequestTimestamp=current_timestamp, PeriodFrom=start_date, PeriodTo=finish_date, NumberOfChargingSessions=NumberOfChargingSessions, ChargingSessionsList=requested_sessions)
 	elif (format == 'csv'):
-		with open('SessionPerPoint.csv', 'w', newline='') as file:
-		    writer = csv.writer(file)
-		    #-- first row must have the names of the columns (attibutes of the entity)
-		    writer.writerow(["Point","PointOperator", "RequestTimestamp", "PeriodFrom","PeriodTo","NumberOfChargingSessions","SessionIndex","SessionID","StartedOn","FinishedOn","Protocol","EnergyDelivered","Payment","VehicleType"])
-
-		    x=0
-		    #while x<NumberOfChargingSessions:
-		     #   (
-		      #  writer.writerow([   #one single row contain:
-
-
-		       # ])
-		        #)
-
-
+	    #-- first row must have the names of the columns (attibutes of the entity)
+		csv=""
+		csv=csv+"Point,PointOperator,RequestTimestamp,PeriodFrom,PeriodTo,NumberOfChargingSessions,SessionIndex,SessionID,StartedOn,FinishedOn,Protocol,EnergyDelivered,Payment,VehicleType\n"
+		i=0
+		while i<NumberOfChargingSessions:
+			csv=csv+str(pointID)+","+operator['Operator']+","+str(current_timestamp)+","+str(start_date)+","+ str(finish_date)+","+ str(NumberOfChargingSessions)+","+str(requested_sessions[i]["SessionIndex"])+","+str(requested_sessions[i]["SessionID"])+","+str(requested_sessions[i]["StartedOn"])+","+str(requested_sessions[i]["FinishedOn"])+","+requested_sessions[i]["Protocol"]+","+str(requested_sessions[i]["EnergyDelivered"])+","+requested_sessions[i]["PaymentType"]+","+requested_sessions[i]["Type"]+"\n"
+			i=i+1
 		return Response(csv, mimetype='text/csv')
 	else:
 		return Response(status=400)
