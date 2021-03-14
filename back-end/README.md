@@ -1,16 +1,16 @@
-# Back-end
+# Back-end📃
 
-Ενδεικτικά περιεχόμενα:
-
-- Πηγαίος κώδικας εφαρμογής για εισαγωγή, διαχείριση και
-  πρόσβαση σε δεδομένα (backend).
-- Database dump (sql ή json)
-- Back-end functional tests.
-- Back-end unit tests.
-- RESTful API.
+- Database scheme
+- Γεννήτριες & dump files
+- Back-end API.py
 
 
+# Prerequisites📌
 
-# Prerequisites
+- pip3 install -r requirements.txt
+- pip3 install -r secondary_requirements.txt
 
-pip install -r requirements.txt
+
+# Άλλα σχόλια✅
+
+- Έγιναν έλεγχοι του back-end με χρήση του εργαλείου Postman
