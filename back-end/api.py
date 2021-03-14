@@ -417,8 +417,8 @@ def SessionsPerPoint(pointID, yyyymmdd_from, yyyymmdd_to):
 	finish_date=finish_year+"-"+finish_month+"-"+finish_day
 
 	current_timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-	requested_sessions = db_read("""SELECT SessionID, StartedOn, FinishedOn, Protocol, FORMAT(EnergyDelivered,2) AS EnergyDelivered, PaymentType, Ve.Type FROM session INNER JOIN vehicle AS Ve USING (VehicleID) WHERE pointID=%s AND DATE(FinishedON) BETWEEN %s AND %s""",(int(pointID), start_date, finish_date))
+	db_write("""SET @rank=0;""",())
+	requested_sessions = db_read(""" SELECT @rank:=@rank+1 AS SessionIndex, SessionID, StartedOn, FinishedOn, Protocol, FORMAT(EnergyDelivered,2) AS EnergyDelivered, PaymentType, Ve.Type FROM session INNER JOIN vehicle AS Ve USING (VehicleID) WHERE pointID=%s AND DATE(FinishedON) BETWEEN %s AND %s""",(int(pointID), start_date, finish_date))
 	NumberOfChargingSessions = len(requested_sessions)
 
 	return jsonify(Point=pointID, PointOperator=operator['Operator'], RequestTimestamp=current_timestamp, PeriodFrom=start_date, PeriodTo=finish_date, NumberOfChargingSessions=NumberOfChargingSessions, ChargingSessionsList=requested_sessions)
@@ -487,6 +487,66 @@ def SessionsPerStation(stationID, yyyymmdd_from, yyyymmdd_to):
 	return jsonify(StationID=stationID, Operator=operator['Operator'], RequestTimestamp=current_timestamp, PeriodFrom=start_date, PeriodTo=finish_date, TotalEnergyDelivered=TotalEnergyDelivered['TotalEnergyDelivered'], NumberofActivePoints=NumberofActivePoints, SessionSummaryList=ActivePointsList)
 
 
+
+#🟩🟩🟩🟧🟧🟧🟧🟧🟧🟩🟩🟩-- 2c SessionsPerEV --🟩🟩🟩🟧🟧🟧🟧🟧🟧🟩🟩🟩
+
+@baseURL.route('/SessionsPerEV/<vehicleID>/<yyyymmdd_from>/<yyyymmdd_to>', methods=['GET'])
+@jwt_required()
+def SessionsPerEV(vehicleID, yyyymmdd_from, yyyymmdd_to):
+	#parse the args
+	g.stationID = vehicleID
+	g.yyyymmdd_from = yyyymmdd_from
+	g.yyyymmdd_to = yyyymmdd_to
+
+	#check point ID
+	if (not(vehicleID.isdigit()) or not(yyyymmdd_from.isdigit()) or not(yyyymmdd_to.isdigit())):
+		return Response(status=400)
+
+	vehicle_exists = db_read("""SELECT * FROM Vehicle WHERE VehicleID = %s""", (int(vehicleID),))
+
+	if (len(vehicle_exists) == 0): #no such a point
+		return Response(status=400)
+
+
+	#check year
+
+	start_year = yyyymmdd_from[0] + yyyymmdd_from[1] + yyyymmdd_from[2] + yyyymmdd_from[3]
+	finish_year = yyyymmdd_to[0] + yyyymmdd_to[1] + yyyymmdd_to[2] + yyyymmdd_to[3]
+
+	current_year = datetime.datetime.now().year
+
+	if ((int(finish_year)>int(current_year)) or (int(finish_year)<int(start_year))):
+		return Response(status=400)
+
+	#check month
+	start_month = yyyymmdd_from[4] + yyyymmdd_from[5]
+	finish_month = yyyymmdd_to[4] + yyyymmdd_to[5]
+
+	if ((int(start_month)>13) or (int(finish_month)>13) or (int(start_month)<1) or (int(finish_month)<0) ):
+		return Response(status=400)
+
+	#check day
+	start_day = yyyymmdd_from[6] + yyyymmdd_from[7]
+	finish_day = yyyymmdd_to[6] + yyyymmdd_to[7]
+
+	if ((int(start_day)>31) or (int(finish_day)>31) or (int(start_day)<1) or (int(finish_day)<0)):
+		return Response(status=400)
+
+	start_date=start_year+"-"+start_month+"-"+start_day
+	finish_date=finish_year+"-"+finish_month+"-"+finish_day
+
+	current_timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+	TotalEnergyDeliveredlist = db_read("""SELECT FORMAT(SUM(EnergyDelivered),2) AS TotalEnergyDelivered FROM  session WHERE VehicleID=%s AND DATE(FinishedON) BETWEEN %s AND %s""",(vehicleID, start_date, finish_date))
+	TotalEnergyDelivered=TotalEnergyDeliveredlist[0]
+	VisitedPointslist = db_read("""SELECT COUNT(PointID) AS NumberOfVisitedPoints FROM  session WHERE VehicleID=%s AND DATE(FinishedON) BETWEEN %s AND %s""",(vehicleID, start_date, finish_date))
+	VisitedPoints=VisitedPointslist[0]
+	db_write("""SET @rank=0;""",())
+	VehicleChargingSessionsList = db_read(""" SELECT @rank:=@rank+1 AS SessionIndex, SessionID, Pr.Name, StartedOn, FinishedOn, FORMAT(EnergyDelivered,2) AS EnergyDelivered, PricePolicyRef, FORMAT(CostPerKWh,2), FORMAT(SessionCost,2)  FROM session INNER JOIN Provider AS Pr USING (ProviderID) WHERE vehicleID=%s AND DATE(FinishedON) BETWEEN %s AND %s""",(int(vehicleID), start_date, finish_date))
+	NumberOfVehicleChargingSessions = len(VehicleChargingSessionsList)
+
+	return jsonify(VehicleID=vehicleID, RequestTimestamp=current_timestamp, PeriodFrom=start_date, PeriodTo=finish_date, TotalEnergyDelivered=TotalEnergyDelivered['TotalEnergyDelivered'], NumberOfVisitedPoints=VisitedPoints['NumberOfVisitedPoints'], NumberOfVehicleChargingSessions=NumberOfVehicleChargingSessions, VehicleChargingSessionsList=VehicleChargingSessionsList)
 
 
 
