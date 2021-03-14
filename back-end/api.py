@@ -627,6 +627,9 @@ def SessionsPerProvider(providerID, yyyymmdd_from, yyyymmdd_to):
 	g.yyyymmdd_from = yyyymmdd_from
 	g.yyyymmdd_to = yyyymmdd_to
 
+	format = request.args.get('format', default=None)
+	if (format == None): format = 'json'
+
 	#check point ID
 	if (not(providerID.isdigit()) or not(yyyymmdd_from.isdigit()) or not(yyyymmdd_to.isdigit())):
 		return Response(status=400)
@@ -686,9 +689,19 @@ def SessionsPerProvider(providerID, yyyymmdd_from, yyyymmdd_to):
 		ProviderSession[i]["FinishedOn"]=ProviderSession[i]["FinishedOn"].strftime("%Y-%m-%d %H:%M:%S")
 
 
-	return jsonify(sessions=ProviderSession)
-
-
+	if (format == 'json'):
+		return jsonify(sessions=ProviderSession)
+	elif (format == 'csv'):
+		#-- first row must have the names of the columns (attibutes of the entity)
+		csv=""
+		csv=csv+"ProviderID,ProviderName,StationID,SessionID,VehicleID,StartedOn,FinishedO,EnergyDelivered,PricePolicyRef,CostPerKWh,TotalCost\n"
+		i=0
+		while i<len(ProviderSession):
+			csv=csv+str(providerID)+","+str(ProviderSession[i]["ProviderName"])+","+str(ProviderSession[i]["StationID"])+","+str(ProviderSession[i]["SessionID"])+","+str(ProviderSession[i]["VehicleID"])+","+str(ProviderSession[i]["StartedOn"])+","+str(ProviderSession[i]["FinishedOn"])+","+str(ProviderSession[i]["EnergyDelivered"])+","+str(ProviderSession[i]["PricePolicyRef"])+","+str(ProviderSession[i]["CostPerKWh"])+","+str(ProviderSession[i]["TotalCost"])+"\n"
+			i=i+1
+		return Response(csv, mimetype='text/csv')
+	else:
+		return Response(status=400)
 
 
 
