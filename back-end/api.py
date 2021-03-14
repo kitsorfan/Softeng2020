@@ -549,6 +549,73 @@ def SessionsPerEV(vehicleID, yyyymmdd_from, yyyymmdd_to):
 	return jsonify(VehicleID=vehicleID, RequestTimestamp=current_timestamp, PeriodFrom=start_date, PeriodTo=finish_date, TotalEnergyDelivered=TotalEnergyDelivered['TotalEnergyDelivered'], NumberOfVisitedPoints=VisitedPoints['NumberOfVisitedPoints'], NumberOfVehicleChargingSessions=NumberOfVehicleChargingSessions, VehicleChargingSessionsList=VehicleChargingSessionsList)
 
 
+#🟩🟩🟩🟩🟧🟧🟧🟧🟩🟩🟩🟩-- 2d SessionsPerProvider --🟩🟩🟩🟩🟧🟧🟧🟧🟩🟩🟩🟩
+
+@baseURL.route('/SessionsPerProvider/<providerID>/<yyyymmdd_from>/<yyyymmdd_to>', methods=['GET'])
+@jwt_required()
+def SessionsPerProvider(providerID, yyyymmdd_from, yyyymmdd_to):
+	#parse the args
+	g.providerID = providerID
+	g.yyyymmdd_from = yyyymmdd_from
+	g.yyyymmdd_to = yyyymmdd_to
+
+	#check point ID
+	if (not(providerID.isdigit()) or not(yyyymmdd_from.isdigit()) or not(yyyymmdd_to.isdigit())):
+		return Response(status=400)
+
+	provider_exists = db_read("""SELECT * FROM Provider WHERE ProviderID = %s""", (int(providerID),))
+
+	if (len(provider_exists) == 0): #no such a point
+		return Response(status=400)
+
+
+	#check year
+
+	start_year = yyyymmdd_from[0] + yyyymmdd_from[1] + yyyymmdd_from[2] + yyyymmdd_from[3]
+	finish_year = yyyymmdd_to[0] + yyyymmdd_to[1] + yyyymmdd_to[2] + yyyymmdd_to[3]
+
+	current_year = datetime.datetime.now().year
+
+	if ((int(finish_year)>int(current_year)) or (int(finish_year)<int(start_year))):
+		return Response(status=400)
+
+	#check month
+	start_month = yyyymmdd_from[4] + yyyymmdd_from[5]
+	finish_month = yyyymmdd_to[4] + yyyymmdd_to[5]
+
+	if ((int(start_month)>13) or (int(finish_month)>13) or (int(start_month)<1) or (int(finish_month)<0) ):
+		return Response(status=400)
+
+	#check day
+	start_day = yyyymmdd_from[6] + yyyymmdd_from[7]
+	finish_day = yyyymmdd_to[6] + yyyymmdd_to[7]
+
+	if ((int(start_day)>31) or (int(finish_day)>31) or (int(start_day)<1) or (int(finish_day)<0)):
+		return Response(status=400)
+
+	start_date=start_year+"-"+start_month+"-"+start_day
+	finish_date=finish_year+"-"+finish_month+"-"+finish_day
+
+	ProviderSession=db_read("""SELECT
+	Pr.ProviderID,
+	Pr.Name AS ProviderName,
+	Ch.StationID AS StationID,
+	se.SessionID,
+	se.VehicleID,
+	se.StartedOn,
+	se.FinishedOn,
+	FORMAT(se.EnergyDelivered, 2) AS EnergyDelivered,
+	se.PricePolicyRef,
+	FORMAT(se.CostPerKWh,2) AS CostPerKWh,
+	FORMAT(se.SessionCost,2) AS TotalCost
+	FROM
+	session se
+	INNER JOIN Chargingpoint ch USING(PointID) INNER JOIN Provider pr USING (ProviderID)
+	WHERE se.providerID=%s AND DATE(se.FinishedON) BETWEEN %s AND %s""",(int(providerID), start_date, finish_date))
+
+	return jsonify(sessions=ProviderSession)
+
+
 
 
 
