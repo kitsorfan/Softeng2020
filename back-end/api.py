@@ -367,7 +367,7 @@ def users(username):
 #@jwt_required()
 #def sessionupd():
 
-#🟩🟧🟧🟧🟧🟧🟧🟧🟧🟧🟧🟩-- SessionsPerPoint --🟩🟧🟧🟧🟧🟧🟧🟧🟧🟧🟧🟩
+#🟩🟧🟧🟧🟧🟧🟧🟧🟧🟧🟧🟩-- 2a SessionsPerPoint --🟩🟧🟧🟧🟧🟧🟧🟧🟧🟧🟧🟩
 
 @baseURL.route('/SessionsPerPoint/<pointID>/<yyyymmdd_from>/<yyyymmdd_to>', methods=['GET'])
 @jwt_required()
@@ -418,10 +418,77 @@ def SessionsPerPoint(pointID, yyyymmdd_from, yyyymmdd_to):
 
 	current_timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-	requested_sessions = db_read("""SELECT SessionID, StartedOn, FinishedOn, Protocol, FLOOR(EnergyDelivered) AS EnergyDelivered, PaymentType, Ve.Type FROM session INNER JOIN vehicle AS Ve USING (VehicleID) WHERE pointID=%s AND  DATE(FinishedON) BETWEEN %s AND %s""",(int(pointID), start_date, finish_date))
+	requested_sessions = db_read("""SELECT SessionID, StartedOn, FinishedOn, Protocol, FLOOR(EnergyDelivered) AS EnergyDelivered, PaymentType, Ve.Type FROM session INNER JOIN vehicle AS Ve USING (VehicleID) WHERE pointID=%s AND DATE(FinishedON) BETWEEN %s AND %s""",(int(pointID), start_date, finish_date))
 	NumberOfChargingSessions = len(requested_sessions)
 
 	return jsonify(Point=pointID, PointOperator=operator['Operator'], RequestTimestamp=current_timestamp, PeriodFrom=start_date, PeriodTo=finish_date, NumberOfChargingSessions=NumberOfChargingSessions, ChargingSessionsList=requested_sessions)
+
+
+
+
+#🟩🟩🟧🟧🟧🟧🟧🟧🟧🟧🟩🟩-- 2b SessionsPerStation --🟩🟩🟧🟧🟧🟧🟧🟧🟧🟧🟩🟩
+
+@baseURL.route('/SessionsPerStation/<stationID>/<yyyymmdd_from>/<yyyymmdd_to>', methods=['GET'])
+@jwt_required()
+def SessionsPerStation(stationID, yyyymmdd_from, yyyymmdd_to):
+	#parse the args
+	g.stationID = stationID
+	g.yyyymmdd_from = yyyymmdd_from
+	g.yyyymmdd_to = yyyymmdd_to
+
+	#check point ID
+	if (not(stationID.isdigit()) or not(yyyymmdd_from.isdigit()) or not(yyyymmdd_to.isdigit())):
+		return Response(status=400)
+
+	station_exists = db_read("""SELECT * FROM Station WHERE StationID = %s""", (int(stationID),))
+
+	if (len(station_exists) == 0): #no such a point
+		return Response(status=400)
+
+	operatorlist = db_read("""SELECT Operator FROM Station WHERE stationID = %s """, (int(stationID),))
+	operator=operatorlist[0]
+
+	#check year
+
+	start_year = yyyymmdd_from[0] + yyyymmdd_from[1] + yyyymmdd_from[2] + yyyymmdd_from[3]
+	finish_year = yyyymmdd_to[0] + yyyymmdd_to[1] + yyyymmdd_to[2] + yyyymmdd_to[3]
+
+	current_year = datetime.datetime.now().year
+
+	if ((int(finish_year)>int(current_year)) or (int(finish_year)<int(start_year))):
+		return Response(status=400)
+
+	#check month
+	start_month = yyyymmdd_from[4] + yyyymmdd_from[5]
+	finish_month = yyyymmdd_to[4] + yyyymmdd_to[5]
+
+	if ((int(start_month)>13) or (int(finish_month)>13) or (int(start_month)<1) or (int(finish_month)<0) ):
+		return Response(status=400)
+
+	#check day
+	start_day = yyyymmdd_from[6] + yyyymmdd_from[7]
+	finish_day = yyyymmdd_to[6] + yyyymmdd_to[7]
+
+	if ((int(start_day)>31) or (int(finish_day)>31) or (int(start_day)<1) or (int(finish_day)<0)):
+		return Response(status=400)
+
+	start_date=start_year+"-"+start_month+"-"+start_day
+	finish_date=finish_year+"-"+finish_month+"-"+finish_day
+
+	current_timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+	TotalEnergyDeliveredlist = db_read("""SELECT FORMAT(SUM(ses.EnergyDelivered),0) AS TotalEnergyDelivered FROM  session ses INNER JOIN ChargingPoint ch USING(PointID) WHERE ch.StationID=%s AND DATE(FinishedON) BETWEEN %s AND %s""",(stationID, start_date, finish_date))
+	TotalEnergyDelivered=TotalEnergyDeliveredlist[0]
+
+	ActivePointsList = db_read("""SELECT PointID, Count(PointID) AS PointSessions, FORMAT(SUM(ses.EnergyDelivered),0) AS EnergyDelivered FROM  session ses INNER JOIN ChargingPoint ch USING(PointID) WHERE ch.StationID=%s AND EnergyDelivered>0 AND DATE(FinishedON) BETWEEN %s AND %s  GROUP BY PointID""",(stationID, start_date, finish_date))
+	NumberofActivePoints = len(ActivePointsList)
+
+	return jsonify(StationID=stationID, Operator=operator['Operator'], RequestTimestamp=current_timestamp, PeriodFrom=start_date, PeriodTo=finish_date, TotalEnergyDelivered=TotalEnergyDelivered['TotalEnergyDelivered'], NumberofActivePoints=NumberofActivePoints, SessionSummaryList=ActivePointsList)
+
+
+
+
 
 #@@@@@@@@@@@@@@@@@@@ CUSTOM ROUTE@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 #to avoid some problems with dependecies put this line of code at EOF
