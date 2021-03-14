@@ -47,7 +47,7 @@ from flask_jwt_extended import jwt_required
 from flask_jwt_extended import JWTManager, get_jwt
 
 import json
-
+import csv
 
 
 import requests
@@ -377,6 +377,10 @@ def SessionsPerPoint(pointID, yyyymmdd_from, yyyymmdd_to):
 	g.yyyymmdd_from = yyyymmdd_from
 	g.yyyymmdd_to = yyyymmdd_to
 
+	format = request.args.get('format', default=None)
+	if (format == None): format = 'json'
+
+
 	#check point ID
 	if (not(pointID.isdigit()) or not(yyyymmdd_from.isdigit()) or not(yyyymmdd_to.isdigit())):
 		return Response(status=400)
@@ -430,8 +434,27 @@ def SessionsPerPoint(pointID, yyyymmdd_from, yyyymmdd_to):
 		requested_sessions[i]["FinishedOn"]=requested_sessions[i]["FinishedOn"].strftime("%Y-%m-%d %H:%M:%S")
 
 
-	return jsonify(Point=pointID, PointOperator=operator['Operator'], RequestTimestamp=current_timestamp, PeriodFrom=start_date, PeriodTo=finish_date, NumberOfChargingSessions=NumberOfChargingSessions, ChargingSessionsList=requested_sessions)
+	if (format == 'json'):
+		return jsonify(Point=pointID, PointOperator=operator['Operator'], RequestTimestamp=current_timestamp, PeriodFrom=start_date, PeriodTo=finish_date, NumberOfChargingSessions=NumberOfChargingSessions, ChargingSessionsList=requested_sessions)
+	elif (format == 'csv'):
+		with open('SessionPerPoint.csv', 'w', newline='') as file:
+		    writer = csv.writer(file)
+		    #-- first row must have the names of the columns (attibutes of the entity)
+		    writer.writerow(["Point","PointOperator", "RequestTimestamp", "PeriodFrom","PeriodTo","NumberOfChargingSessions","SessionIndex","SessionID","StartedOn","FinishedOn","Protocol","EnergyDelivered","Payment","VehicleType"])
 
+		    x=0
+		    #while x<NumberOfChargingSessions:
+		     #   (
+		      #  writer.writerow([   #one single row contain:
+
+
+		       # ])
+		        #)
+
+
+		return Response(csv, mimetype='text/csv')
+	else:
+		return Response(status=400)
 
 
 
