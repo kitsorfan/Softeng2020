@@ -1,32 +1,35 @@
-# e-Lectra Project by The Charging Aces:
-# ~Stelios Kandylakis
-# ~Margarita   Oikonomakou
-# ~Kitsos      Orfanopoulos
-# ~Vasilis     Papalexis
-# ~Georgia     Stamou
-# ~Dido        Stoikou
-# Softeng, ECE NTUA, 2021
+##############################################################################
+#
+#     SETUP CONFIGURATION
+#
+##############################################################################
+#
+#   $pipenv install click setuptools
+#
+#   after that we edit setup.py
+#
+#   $pip install --editable .
+#
+###############################################################################
 
-# cli code
-
+import click
+import random
+import requests
+import csv
 from cmd import Cmd
 import six
 import pyfiglet
 import urllib3
-import requests
-import click
+from requests.auth import HTTPBasicAuth
 from datetime import date
-import csv
 import os
 import json
 import jwt
 from pathlib import Path
 
-base_url = "https://localhost:8765/evcharge/api"
 
-@click.group()
-def main():
-	pass
+baseurl="http://localhost:8765/evcharge/api"
+
 
 def tokenizer(filename):
     if os.path.exists(filename):
@@ -64,47 +67,96 @@ def dateresolver(date):
         return "year/" + date
     return ""
 
+home = str(Path.home())
+base_url = "http://localhost:8765/evcharge/api"
+
+@click.group()
+def main():
+    pass
+
 
 @click.option('--passw', prompt='Your password',hide_input=True, help='The password of the User')
 @click.option('--username', prompt='Your username', help='The username of the User')
 @main.command()
 def login(username, passw):
-    url = base_url + "/Login"
+    url = base_url + "/login"
+    #url = 'http://localhost:8765/evcharge/api/login?username=kitsorfan&password=secret'
     filename = home + "/softeng20bAPI.token"
-    r = requests.post(url, json.dumps({'username': username, 'password':passw }))
-    if errorhandling(r):
-        if len(r.text)<100:
-            click.echo(r.text)
+    data = {'username':username, 'password':passw}
+    #r = requests.post(url, params = params, json.dumps({'username': username, 'password':passw }))
+    response = requests.post(url, data = data)
+    if errorhandling(response):
+        if len(response.text)<100:
+            click.echo(response.text)
         else:
             file = open(filename, 'w')
-            file.write(r.text)
+            file.write(response.text)
             file.close()
-            log("The Charging Aces")
-            log("Welcome to e-λέκτρα CLI app!")
-            click.echo('Hello %s!' % username)
-
-
 
 @main.command()
-def logout():
-    url = base_url + "/Logout"
+@click.option('--apikey')
+def logout(apikey):
+    url = base_url + "/logout"
     filename = home + "/softeng20bAPI.token"
+    auth = HTTPBasicAuth('apikey', apikey)
     token = tokenizer(filename)
-    if token != None:
-        r = requests.post(url, headers=token)
-        if errorhandling(r):
-            os.remove(filename)
-            click.echo('You have logged out. Goodbye!')
+    r = requests.post(url, headers=token, auth=auth)
+    if errorhandling(r):
+        os.remove(filename)
+        click.echo('You have logged out. Goodbye!')
+
 
 @click.option('--format', type=click.Choice(['csv', 'json']), default='json' , help='The format with which you want the results to be in')
 @click.option('--datefrom', prompt='Please enter the starting date', help='Date in YYYY-MM-DD format, Month in YYYY-MM format or Year in YYYY format')
 @click.option('--dateto', prompt='Please enter the ending date', help='Date in YYYY-MM-DD format, Month in YYYY-MM format or Year in YYYY format')
 @click.option('--point', prompt='Please enter the point name', help='Name of Point')
+@click.option('--apikey')
 @main.command()
-def SessionsPerPoint(point, datefrom, dateto, format):
-    url = base_url + "/SessionsPerPoint/" + point + "/" + dateresolver(datefrom) + "/" + dateresolver(dateto) + '?format=' + format
+def SessionsPerPoint(point, datefrom, dateto, format, apikey):
+    url = base_url + "/SessionsPerPoint/" + point + "/" +datefrom + "/" + dateto
     filename = home + "/softeng20bAPI.token"
     newfile = home + "/SessionsPerPoint_" + point + "_" + dateresolver(datefrom).replace('/','_') +  "_" + dateresolver(dateto).replace('/', '_') + '.' + format
+    token = tokenizer(filename)
+    #print(token)
+    if token!=None:
+        r = requests.get(url, headers = token)
+        if errorhandling(r):
+            with open(newfile, 'w') as new:
+                if format == 'json':
+                    json.dump(r.json(), new)
+                else:
+                    new.write(r.content.decode("UTF-8"))
+            click.echo("Data downloaded at " + newfile)
+            
+            
+
+
+@main.command()
+@click.option('--apikey')
+def healthcheck(apikey):
+    url='http://localhost:8765/evcharge/api/admin/healthcheck'
+    response = requests.get(url=url)
+    print(response.json()) 
+
+@main.command()
+@click.option('--apikey')
+def resetsessions(apikey):
+    url='http://localhost:8765/evcharge/api/admin/resetsessions'
+    response = requests.post(url=url)
+    print(response.json())
+
+@main.command()
+@click.option('--station')
+@click.option('--datefrom')
+@click.option('--dateto')
+@click.option('--format')
+@click.option('--apikey')
+def sessionsperstation(station, datefrom, dateto, format, apikey):
+    url='http://localhost:8765/evcharge/api/SessionsPerStation/'+station+'/'+datefrom+'/'+dateto
+    #url='http://localhost:8000/'+station+'/'+datefrom+'/'+dateto
+    #print(url)
+    filename = home + "/softeng20bAPI.token"
+    newfile = home + "/SessionsPerStation_" + station + "_" + dateresolver(datefrom).replace('/','_') +  "_" + dateresolver(dateto).replace('/', '_') + '.' + format
     token = tokenizer(filename)
     #print(token)
     if token!=None:
@@ -119,83 +171,28 @@ def SessionsPerPoint(point, datefrom, dateto, format):
 
 
 @main.command()
-@click.option('--format')
-@click.option('--apikey')
-def healthcheck(format,apikey):
-    #url='https://localhost:8765/evcharge/api/healthcheck'
-    response = requests.get(url=url)
-    if format=="json":
-        print(response.json())
-    else:
-        if response.status_code != 200:
-            print('Failed to get data:', response.status_code)
-        else:
-            wrapper = csv.reader(response.text.strip().split('\n'))
-            for record in wrapper:
-                print(record)
-
-@main.command()
-@click.option('--format')
-@click.option('--apikey')
-def resetsessions(format,apikey):
-    #url='https://localhost:8765/evcharge/api/resetsessions'
-    response = requests.get(url=url)
-    if format=="json":
-        print(response.json())
-    else:
-        if response.status_code != 200:
-            print('Failed to get data:', response.status_code)
-        else:
-            wrapper = csv.reader(response.text.strip().split('\n'))
-            for record in wrapper:
-                print(record)
-
-
-
-@main.command()
-@click.option('--station')
-@click.option('--datefrom')
-@click.option('--dateto')
-@click.option('--format')
-@click.option('--apikey')
-def sessionsperstation(station, datefrom, dateto, format, apikey):
-    #url='https://localhost:8765/evcharge/api/SessionsPerStation/'+station+'/'+datefrom+'/'+dateto
-    url='http://localhost:8000/'+station+'/'+datefrom+'/'+dateto
-    print(url)
-    response = requests.get(url=url)
-    if format=="json":
-        print(response.json())
-    else:
-        if response.status_code != 200:
-            print('Failed to get data:', response.status_code)
-        else:
-            wrapper = csv.reader(response.text.strip().split('\n'))
-            for record in wrapper:
-                print(record)
-
-
-
-
-@main.command()
 @click.option('--ev')
 @click.option('--datefrom')
 @click.option('--dateto')
 @click.option('--format')
 @click.option('--apikey')
 def sessionsperev(ev, datefrom, dateto, format, apikey):
-    #url='https://localhost:8765/evcharge/api/SessionsPerEV/'+ev+'/'+datefrom+'/'+dateto
-    url='http://localhost:8000/'+ev+'/'+datefrom+'/'+dateto
-    response = requests.get(url=url)
-    print(response.url)
-    if format =="json":
-        print(response.json())
-    else:
-        if response.status_code != 200:
-            print('Failed to get data:', response.status_code)
-        else:
-            wrapper = csv.reader(response.text.strip().split('\n'))
-            for record in wrapper:
-                print(record)
+    url='http://localhost:8765/evcharge/api/SessionsPerEV/'+ev+'/'+datefrom+'/'+dateto
+    #url='http://localhost:8000/'+station+'/'+datefrom+'/'+dateto
+    #print(url)
+    filename = home + "/softeng20bAPI.token"
+    newfile = home + "/SessionsPerEV_" + ev + "_" + dateresolver(datefrom).replace('/','_') +  "_" + dateresolver(dateto).replace('/', '_') + '.' + format
+    token = tokenizer(filename)
+    #print(token)
+    if token!=None:
+        r = requests.get(url, headers = token)
+        if errorhandling(r):
+            with open(newfile, 'w') as new:
+                if format == 'json':
+                    json.dump(r.json(), new)
+                else:
+                    new.write(r.content.decode("UTF-8"))
+            click.echo("Data downloaded at " + newfile)
 
 @main.command()
 @click.option('--provider')
@@ -203,116 +200,90 @@ def sessionsperev(ev, datefrom, dateto, format, apikey):
 @click.option('--dateto')
 @click.option('--format')
 @click.option('--apikey')
-def sessionsperprovider(provider, datefrom, dateto, format, apikey):
-    #url='https://localhost:8765/evcharge/api/SessionsPerProvider/'+provider+'/'+datefrom+'/'+dateto
-    url='http://localhost:8000/'+provider+'/'+datefrom+'/'+dateto
-    response = requests.get(url=url)
-    print(response.url)
-    if format =="json":
-        print(response.json())
-    else:
-        if response.status_code != 200:
-            print('Failed to get data:', response.status_code)
-        else:
-            wrapper = csv.reader(response.text.strip().split('\n'))
-            for record in wrapper:
-                print(record)
-		
-		
+def SessionsPerProvider(provider, datefrom, dateto, format, apikey):
+    url='http://localhost:8765/evcharge/api/SessionsPerProvider/'+provider+'/'+datefrom+'/'+dateto
+    filename = home + "/softeng20bAPI.token"
+    newfile = home + "/SessionsPerProvider_" + provider + "_" + dateresolver(datefrom).replace('/','_') +  "_" + dateresolver(dateto).replace('/', '_') + '.' + format
+    token = tokenizer(filename)
+    #print(token)
+    if token!=None:
+        r = requests.get(url, headers = token)
+        if errorhandling(r):
+            with open(newfile, 'w') as new:
+                if format == 'json':
+                    json.dump(r.json(), new)
+                else:
+                    new.write(r.content.decode("UTF-8"))
+            click.echo("Data downloaded at " + newfile)
+
 
 @main.command()
 @click.option('--usermod', is_flag=True)
-@click.option('--username', is_flag=True)
-@click.option('--passw', is_flag=True)
-@click.option('--users', is_flag=True)
-@click.option('--sessionsupd', is_flag=True)
-@click.option('--source', is_flag=True)
+@click.option('--username')
+@click.option('--passw')
+@click.option('--users')
+@click.option('--sessionsupd', default=None)
+@click.option('--source')
 @click.option('--healthcheck', is_flag=True)
 @click.option('--resetsessions', is_flag=True)
-@click.option('--format', is_flag=True)
-@click.option('--apikey', is_flag=True)
-def admin(usermod, username, passw, users, sessionsupd, format, apikey):
-    if usermode:
-        if username:
-            if passw:
-                #{baseURL}/admin/usermod/:username/:password
-                url='https://localhost:8765/evcharge/api/admin/usermod/'+username+'/'+passw
-                response = requests.get(url=url)
-                if format =="json":
-                    print(response.json())
-                else:
-                    if response.status_code != 200:
-                        print('Failed to get data:', response.status_code)
-                    else:
-                        wrapper = csv.reader(response.text.strip().split('\n'))
-                        for record in wrapper:
-                            print(record)
+@click.option('--format')
+@click.option('--apikey')
+def admin(usermod, username, passw, users, sessionsupd, source, healthcheck, resetsessions, format, apikey):
+    url = base_url + "/admin/"
+    filename = home + "/softeng20bAPI.token"
+    token = tokenizer(filename)
+    if token != None:
+        if usermod:
+            url = url + 'usermod/'+username+'/'+passw
+            r = requests.post(url, headers = {'X-OBSERVATORY-AUTH': 'Bearer '+apikey})
+            if errorhandling(r):
+                click.echo("The new user has been added successfully")
 
 
-    elif users:
-        url='https://localhost:8765/evcharge/api/admin/usermod/'+username+'/'+passw
-        response = requests.get(url=url)
-        if format =="json":
+        elif healthcheck:
+            url='http://localhost:8765/evcharge/api/admin/healthcheck'
+            response = requests.get(url=url)
+            print(response.json()) 
+
+        elif resetsessions:
+            url='http://localhost:8765/evcharge/api/admin/resetsessions'
+            response = requests.post(url=url)
             print(response.json())
-        else:
-            if response.status_code != 200:
-                print('Failed to get data:', response.status_code)
-            else:
-                wrapper = csv.reader(response.text.strip().split('\n'))
-                for record in wrapper:
-                    print(record)
 
 
-
-
-
-    elif healthcheck:
-        url='https://localhost:8765/evcharge/api/admin/healthcheck'
-        response = requests.get(url=url)
-        if format=="json":
-            print(response.json())
-        else:
-            if response.status_code != 200:
-                print('Failed to get data:', response.status_code)
-	     else:
-                wrapper = csv.reader(response.text.strip().split('\n'))
-                for record in wrapper:
-                    print(record)
-
-
-
-
-
-
-
-    elif sessionsupd:
-        url='https://localhost:8765/evcharge/api/admin/system/sessionsupd'
-        if os.path.exists(source):
-                files = {'file': ('source', open(source, 'r'))}
-                r = requests.post(url, files = files)
+        elif users:
+            url='http://localhost:8765/evcharge/api/admin/users/'+users
+            filename = home + "/softeng20bAPI.token"
+            newfile = home + "/User" + '.' + format
+            token = tokenizer(filename)
+            #print(token)
+            if token!=None:
+                r = requests.get(url, headers = token)
                 if errorhandling(r):
-                    parsed = json.loads(r.json())
-                    print(json.dumps(parsed, indent=2, sort_keys=True))
-                    click.echo("Successfully uploaded data")
-            else:
-                click.echo("You need to provide a source file")
+                    with open(newfile, 'w') as new:
+                        if format == 'json':
+                            json.dump(r.json(), new)
+                        else:
+                            new.write(r.content.decode("UTF-8"))
+                    click.echo("Data downloaded at " + newfile)
 
 
-    elif resetsessions:
-        url='https://localhost:8765/evcharge/api/admin/resetsessions'
-        response = requests.get(url=url)
-        if format =="json":
-            print(response.json())
-        else:
-            if response.status_code != 200:
-                print('Failed to get data:', response.status_code)
-            else:
-                wrapper = csv.reader(response.text.strip().split('\n'))
-                for record in wrapper:
-                    print(record)
+
+        elif sessionsupd:
+            url='https://localhost:8765/evcharge/api/admin/system/sessionsupd'
+            if os.path.exists(source):
+                    files = {'file': ('source', open(source, 'r'))}
+                    r = requests.post(url, files = files)
+                    if errorhandling(r):
+                        parsed = json.loads(r.json())
+                        print(json.dumps(parsed, indent=2, sort_keys=True))
+                        click.echo("Successfully uploaded data")
+                    else:
+                        click.echo("You need to provide a source file")
 
 
-cli = click.CommandCollection(sources = [main])
 
 if __name__ == '__main__':
-     cli()
+    main()
+
+
