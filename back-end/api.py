@@ -460,6 +460,9 @@ def SessionsPerStation(stationID, yyyymmdd_from, yyyymmdd_to):
 	g.yyyymmdd_from = yyyymmdd_from
 	g.yyyymmdd_to = yyyymmdd_to
 
+	format = request.args.get('format', default=None)
+	if (format == None): format = 'json'
+
 	#check point ID
 	if (not(stationID.isdigit()) or not(yyyymmdd_from.isdigit()) or not(yyyymmdd_to.isdigit())):
 		return Response(status=400)
@@ -508,7 +511,22 @@ def SessionsPerStation(stationID, yyyymmdd_from, yyyymmdd_to):
 	ActivePointsList = db_read("""SELECT PointID, Count(PointID) AS PointSessions, FORMAT(SUM(ses.EnergyDelivered),2) AS EnergyDelivered FROM  session ses INNER JOIN ChargingPoint ch USING(PointID) WHERE ch.StationID=%s AND EnergyDelivered>0 AND DATE(FinishedON) BETWEEN %s AND %s  GROUP BY PointID""",(stationID, start_date, finish_date))
 	NumberofActivePoints = len(ActivePointsList)
 
-	return jsonify(StationID=stationID, Operator=operator['Operator'], RequestTimestamp=current_timestamp, PeriodFrom=start_date, PeriodTo=finish_date, TotalEnergyDelivered=TotalEnergyDelivered['TotalEnergyDelivered'], NumberofActivePoints=NumberofActivePoints, SessionSummaryList=ActivePointsList)
+
+
+	if (format == 'json'):
+		return jsonify(StationID=stationID, Operator=operator['Operator'], RequestTimestamp=current_timestamp, PeriodFrom=start_date, PeriodTo=finish_date, TotalEnergyDelivered=TotalEnergyDelivered['TotalEnergyDelivered'], NumberofActivePoints=NumberofActivePoints, SessionSummaryList=ActivePointsList)
+
+	elif (format == 'csv'):
+	    #-- first row must have the names of the columns (attibutes of the entity)
+		csv=""
+		csv=csv+"StationID,Operator,RequestTimestamp,PeriodFrom,PeriodTo,TotalEnergyDelivered,NumberOfChargingSessions,NumberOfActivePoints,PointID,PointSessions,EnergyDelivered\n"
+		i=0
+		while i<NumberofActivePoints:
+			csv=csv+str(stationID)+","+operator['Operator']+","+str(current_timestamp)+","+str(start_date)+","+ str(finish_date)+","+ str(TotalEnergyDelivered['TotalEnergyDelivered'])+","+str(NumberofActivePoints)+","+str(ActivePointsList[i]["PointID"])+","+str(ActivePointsList[i]["PointSessions"])+","+str(ActivePointsList[i]["EnergyDelivered"])+"\n"
+			i=i+1
+		return Response(csv, mimetype='text/csv')
+	else:
+		return Response(status=400)
 
 
 
