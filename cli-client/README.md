@@ -1,4 +1,4 @@
-# CLI client 🖥
+# 🖥CLI client 
 
 - Command line interface setup (CLI)
 - CLI functional tests
