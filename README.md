@@ -1,7 +1,12 @@
 # <b> e-Lectra Project 🚙🔌</b>
 ### Semester project for 'Software Engineering' course at [ECE](https://www.ece.ntua.gr/en)⚡, [NTUA](https://www.ntua.gr/en)🎓, academic year 2020-2021
 
+
 <img alt="MySQL" src = "https://img.shields.io/badge/MySQL-1136AA?style=for-the-badge&logo=MySQL&logoColor=white" height="28"> <img alt="Flask" src = "https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white" height="28"> <img alt="Spark SQL" src = "https://img.shields.io/badge/Postman-FF6C37?style=for-the-badge&logo=postman&logoColor=white" height="28"> 
+
+<img alt="Byte Code Size" src="https://img.shields.io/github/languages/code-size/kitsorfan/Softeng2020?color=red" />
+<img alt="# Lines of Code" src="https://img.shields.io/tokei/lines/github/kitsorfan/Softeng2020?color=red" />
+<img alt="Last commit" src="https://img.shields.io/github/last-commit/kitsorfan/Softeng2020?color=important" />
 
 <br>
 
