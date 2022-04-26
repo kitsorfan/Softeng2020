@@ -35,7 +35,7 @@ This repository contains an implementation of an **API** written in **Flask** th
 
 ## **📚 Documentation**
 
-    - VPP file includes UML Component, Deployment and Sequence diagrams for application architecture.
+    - VPP file includes UML Activity, Class, Component, Deployment and Sequence diagrams for application architecture.
     - ERD diagram 
     - SRS documentation
     - StRS documentation (one for each stakeholder)
