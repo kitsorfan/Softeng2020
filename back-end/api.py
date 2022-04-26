@@ -10,7 +10,7 @@
 # API code
 
 # --------------Prerequisites-----------------
-#sudo apt-get install python-dev default-libmysqlclient-dev libssl-dev
+# sudo apt-get install python-dev default-libmysqlclient-dev libssl-dev
 # pip install -r requirements.txt
 
 
@@ -25,7 +25,7 @@
 
 
 #-------- Other Comments ---------------------------
-# We are prone to SQL injections... TOFO: fix this threat
+# We are prone to SQL injections... TODO: fix this threat
 
 
 #@@@@@@@@@@@@@@@@@@@@@@-- Modules --@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
