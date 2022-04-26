@@ -1,41 +1,46 @@
-# e-Lectra Project 🚙
-### The Charging Aces⚡:
-<hr>
+# <b> e-Lectra Project 🚙🔌</b>
+### Semester project for 'Software Engineering' course at [ECE](https://www.ece.ntua.gr/en)⚡, [NTUA](https://www.ntua.gr/en)🎓, academic year 2020-2021
 
-## Our Team:
-📃 Stelios    Kandylakis
-🔐 Margarita   Oikonomakou
-⚙ Kitsos      Orfanopoulos
-🖌 Vasilis     Papalexis
-💻 Georgia     Stamou
-🖇 Dido        Stoikou
+<img alt="MySQL" src = "https://img.shields.io/badge/MySQL-1136AA?style=for-the-badge&logo=MySQL&logoColor=white" height="28"> <img alt="Flask" src = "https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white" height="28"> <img alt="Spark SQL" src = "https://img.shields.io/badge/Postman-FF6C37?style=for-the-badge&logo=postman&logoColor=white" height="28"> 
 
-**🎓Softeng, ECE NTUA, 2021**
+<br>
 
-<hr>
+## **📋 Description**
+This repository contains an implementation of an **API** written in **Flask** that creates endpoints for a virtual payment system named as **e-Lectra**. This payment systems control is supposed to handle payments in EV charging stations. The project was elaborated for the Software Engineering course at ECE, NTUA, academic year 2020-2021.
+
+<br>
 
 
-## Directory structure
+## **👔 Team Members**
 
-**/documentation📃**
-- **Αρχείο .vpp** (UML διαγράμματα στο περιβάλλον Visual Paradigm)
-- **SRS documentation**
-- **StRS documentation** (1 για κάθε εξεταζόμενο stakeholder)
+| **Team Name: The Charging Aces⭐**|
+|------------------------------------------------------  |
+| [📃 Stylianos Kandylakis](https://github.com/stylkand/) | 
+| [🔐 Margarita Oikonomakou](https://github.com/meconom)  |
+| [💾 Kitsos Orfanopoulos](https://github.com/kitsorfan)  |
+| [🎨 Vasilis Papalexis](https://github.com/vaspapa)      |
+| [💻 Georgia Stamou](https://github.com/ge-stam)         |
+| [🔗 Dido Stoikou](https://github.com/DidoStoikou)       |
+
+<br>
+    
+##  **🔭 Technologies**
+    - 💾 Database: MySQL Server
+    - 🛠 Back-end: Flask Python
+    - 💻 CLI frontend: Python Click
+    - 📦 Postman (for testing the endpoints)
+
+<br>
 
 
-**/back-end⚙**
-- DB scheme
-- γεννήτριες & dump DB
-- πηγαίος κώδικας API
+## **📚 Documentation**
 
-**/cli-client🖥**
-- πηγαίος κώδικας cli εφαρμογής
+    - VPP file includes UML Component, Deployment and Sequence diagrams for application architecture.
+    - ERD diagram 
+    - SRS documentation
+    - StRS documentation (one for each stakeholder)
 
-**/front-end📱**
-- [απουσιάζει]
+<br>
 
-
-
-
-
-*last updated: 14 March 2021*
+##  **🥏 Agile Methodology**
+    We used the Slack for the coordination of our efforts.
