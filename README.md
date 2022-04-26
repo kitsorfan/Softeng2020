@@ -4,9 +4,7 @@
 
 <img alt="MySQL" src = "https://img.shields.io/badge/MySQL-1136AA?style=for-the-badge&logo=MySQL&logoColor=white" height="28"> <img alt="Flask" src = "https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white" height="28"> <img alt="Spark SQL" src = "https://img.shields.io/badge/Postman-FF6C37?style=for-the-badge&logo=postman&logoColor=white" height="28"> 
 
-<img alt="Byte Code Size" src="https://img.shields.io/github/languages/code-size/kitsorfan/Softeng2020?color=red" />
-<img alt="# Lines of Code" src="https://img.shields.io/tokei/lines/github/kitsorfan/Softeng2020?color=red" />
-<img alt="Last commit" src="https://img.shields.io/github/last-commit/kitsorfan/Softeng2020?color=important" />
+<img alt="Byte Code Size" src="https://img.shields.io/github/languages/code-size/kitsorfan/Softeng2020?color=red" /> <img alt="# Lines of Code" src="https://img.shields.io/tokei/lines/github/kitsorfan/Softeng2020?color=red" /> <img alt="Last commit" src="https://img.shields.io/github/last-commit/kitsorfan/Softeng2020?color=important" />
 
 <br>
 
@@ -40,8 +38,13 @@ This repository contains an implementation of an **API** written in **Flask** th
 
 ## **📚 Documentation**
 
-    - VPP file includes UML Activity, Class, Component, Deployment and Sequence diagrams for application architecture.
-    - ERD diagram 
+    - VPP file includes:
+      - UML Activity Diagram 
+      - UML Class
+      - UML Component
+      - UML Deployment
+      - UML Sequence 
+      - ERD diagram 
     - SRS documentation
     - StRS documentation (one for each stakeholder)
 
