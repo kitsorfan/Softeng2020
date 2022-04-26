@@ -1,3 +1,0 @@
-# Front-end 🖼
-
-[void]
